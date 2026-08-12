@@ -3,8 +3,9 @@ name: consistency-check
 description: >
   Two-phase specification audit for a docs-as-spec project: phase 1 makes sure
   the spec agrees with ITSELF (contradictions, terminology drift, broken
-  links/anchors, decision-record coherence), phase 2 measures the CODE against
-  the spec (docs are truth; every confirmed delta is a code bug). All findings
+  links/anchors, decision-record coherence, residue of earlier versions),
+  phase 2 measures the CODE against the spec (docs are truth; every confirmed
+  delta is a code bug). All findings
   are FILED as backlog item files — nothing is fixed in place. Run it whenever
   a docs-vs-docs or docs-vs-code audit is wanted: on request from the owner or
   the root instance, ad hoc against a recent change, or by the QA agent on its
@@ -72,6 +73,14 @@ conclusions. Hunt, in descending value order:
    two live records deciding one question opposite ways; no informal decision
    log contradicting a numbered record without a dated correction.
 5. **Intra-document self-contradiction.**
+6. **Residue of earlier versions** (charter: "Spec prose is timeless") —
+   historical narration or incident stories in place of present-tense
+   rationale; sections, fields, or files nothing consumes; the same rule
+   legislated in two places where one should own it and the other point at it;
+   metadata (manifests, frontmatter, descriptions) that no longer matches what
+   it describes; `DELETE WHEN` tags whose trigger has fired. A uniform,
+   long-standing pattern is more likely the project's convention than a defect
+   — verify against the docs and history before filing.
 
 **Resolving a contradiction on paper before filing:** pick the canonical side
 from the spec's own evidence — the glossary for terminology; a newer decision

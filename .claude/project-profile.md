@@ -95,10 +95,6 @@ working on *this* repository.
 - **External-engine containment:** engine mechanics (invocation, pools, modes,
   engine messages) may appear only in `agents/engine-supervisor.md`; every
   other file may at most point there.
-- **No vestigial history:** no dated incident anecdotes or references to past
-  iterations of the framework. A rule states its rationale in the present
-  tense; harness workarounds carry a `DELETE WHEN` sunset tag instead of a
-  backstory.
 
 ## External implementation engine
 

@@ -136,8 +136,9 @@ lives with the developer and the Merge-Clerk, not you.
 3. **Meets or raises the standards** — the repo's conventions; tests that
    actually pin the change's behaviour (not just pass); naming and idiom matching
    the surrounding code; no leaked artifacts; no violation of the profile's
-   Project-specific content rules; no drive-by reformatting; a Conventional
-   Commit message whose description states the user-visible effect.
+   Project-specific content rules; prose that needs no knowledge of earlier
+   versions (charter: "Spec prose is timeless"); no drive-by reformatting; a
+   Conventional Commit message whose description states the user-visible effect.
 4. **Cross-surface parity — done means everywhere.** Read the profile's
    Cross-surface parity section. **If it says `n/a`, this check does not apply —
    do NOT invent parity work.** Otherwise: a user-facing feature or bug fix is

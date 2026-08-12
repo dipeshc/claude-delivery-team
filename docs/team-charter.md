@@ -374,6 +374,20 @@ repeated rebases against a moving base and repeated verification of work that
 was always shipping together. Do not batch unrelated items just to reduce a
 count; that trades scope creep for a smaller number, not less waste.
 
+## Spec prose is timeless
+
+Write every rule as if the document were created today. State the rationale in
+the present tense; never narrate the incident, iteration, or refactor that
+motivated a rule — a reader must never need knowledge of an earlier version to
+understand the current one. The residue evolution leaves behind is a defect
+wherever it appears: historical narration, references to things that no longer
+exist, clauses that disagree because an edit missed one of them, sections
+nothing consumes, the same rule legislated in two places where one should own
+it and the other point at it. A change that would leave any of these behind is
+incomplete, and a reviewer treats it exactly like any other defect. The one
+sanctioned exception is a deliberately temporary rule, which carries a
+`DELETE WHEN` tag (below) precisely so it cannot ossify.
+
 ## Sunset-tagged workarounds
 
 Rules that exist only to route around a current harness limitation carry a
