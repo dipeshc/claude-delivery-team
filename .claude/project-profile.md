@@ -26,6 +26,9 @@ working on *this* repository.
   verification.
 - **Full:** n/a — the `consistency-check` skill (spec-vs-spec, then
   spec-vs-code over the agent/skill definitions) is this repo's full audit.
+- **Not covered:** everything not readable — there is no automated gate, so
+  nothing is compiled, run, or booted; reading against the spec is the entire
+  verification.
 - **Notes:** every relative link and `${CLAUDE_PLUGIN_ROOT}` path referenced in
   a changed file must resolve to a file that exists in the repo.
 

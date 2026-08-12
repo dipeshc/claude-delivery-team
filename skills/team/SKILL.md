@@ -270,7 +270,23 @@ report/recover per the watchdog section.
 
 Liveness = merges on the default branch, item-branch tip movement, worktree
 mtimes, transcript growth — **never** output-file mtime, **never** task status
-alone. A dead Manager takes its children with it but loses nothing: every branch
+alone.
+
+**Transcript growth is the only probe that works on a thinking agent.** The
+others are activity side-effects, and a working agent can produce none of them:
+a review is read-only, so its worktree never changes; a directory's mtime does
+not move when files in its *subdirectories* do, so a busy worktree can look
+frozen; and a frontier agent can spend **over an hour inside a single turn**
+reasoning, with no ref, no file, and no reply the whole time. **Silence is not
+death.** Before declaring an agent dead, check that its transcript is growing
+and whether a process is burning CPU on its behalf; prefer asking its parent,
+which can see its children's transcripts directly.
+
+Getting this wrong is expensive in a specific way: a premature "it died"
+dispatches a replacement into a worktree the original still holds — two
+writers, whose edits blend into a single commit that neither agent's honest
+report describes. When genuinely unsure, wait another interval — a slow agent
+costs minutes, a wrongly-recovered one costs the work. A dead Manager takes its children with it but loses nothing: every branch
 and worktree survives on disk. Recovery: relaunch a fresh Manager — under the
 relaunch discipline in [Never two Managers](#never-two-managers), stand-down
 included — and it reconstructs from `git worktree list`,

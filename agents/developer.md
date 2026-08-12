@@ -74,6 +74,9 @@ itself; never touch the backlog's `deferred/` subdirectory.
 - Do what the item file says — its acceptance criteria are the contract. No
   drive-by fixes, no scope creep; a bug you notice outside your item is a note in
   your final report, not a change.
+- When your fix changes a shared helper or corrects a *class* of mistake, check
+  the helper's other call sites for the same defect — the audit is in scope,
+  and what it finds is a finding in your report, not extra changes.
 - You MAY edit the docs in your worktree when the dispatch says the spec needs
   sharpening first, or when your change alters behaviour (the doc amendment
   belongs in the same commit). Sharpen, never re-decide.

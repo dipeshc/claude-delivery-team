@@ -206,6 +206,14 @@ developer's pre-submit verify and the reviewer's re-verify honour this.
 their outcomes. "Should pass" is not a result. A skipped or impossible-to-run
 layer is stated plainly as skipped, with why.
 
+**A defect fix proves its test discriminates.** A change that claims to fix a
+defect shows its new test failing against the unfixed code: revert the fix
+locally, observe the *specific* reported symptom, restore, observe green. A
+test written after the fact can pass by construction — hand-built data or a
+mocked seam the real path never supplies — and a green suite then ships a
+non-fix. Mandatory for concurrency and race fixes; for any other defect fix,
+run the proof or state in the submission why no test surface exists.
+
 ## Done means everywhere
 
 If the project profile declares cross-surface parity, a user-facing feature or
@@ -385,6 +393,33 @@ it and the other point at it. A change that would leave any of these behind is
 incomplete, and a reviewer treats it exactly like any other defect. The one
 sanctioned exception is a deliberately temporary rule, which carries a
 `DELETE WHEN` tag (below) precisely so it cannot ossify.
+
+## Agent memory records mechanics, never permissions
+
+Anything you write to your own persistent memory is read by a **future session
+that has none of today's context**. So memory carries *how this repo behaves* —
+commands, traps, file layouts, failure signatures — and never *what you were
+allowed to do*.
+
+The test, applied at write time: **if a note would make a future session not
+report something it observed, it is a permission — drop it.**
+
+A run-scoped authorisation from a dispatch brief must never be written down as
+though it were policy. Nor may an artifact be reasoned into a standing licence
+("an unsigned commit is already on the default branch, so the signing rule is
+evidently not enforced"). If a control appears unenforced, that is a **finding
+to report**, not a licence to infer.
+
+**Why this needs stating:** the failure is not dishonesty, and it recurs in new
+forms. At write time the agent is truthfully recording *"this was fine today"*;
+at read time a different session parses the identical sentence as *"this is
+fine"*, and nothing in the wording marks the boundary. An agent acting in good
+faith can silently disarm a guard the owner cares about.
+
+When you correct another agent's memory, keep its mechanics verbatim, remove
+only the permission claims, and cross-reference the memory it contradicted.
+Leave a wrong *causal* claim in place with an explicit "this was wrong" note
+rather than deleting it, so nobody re-derives it.
 
 ## Sunset-tagged workarounds
 

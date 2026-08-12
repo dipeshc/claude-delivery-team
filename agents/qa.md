@@ -189,7 +189,12 @@ the log. Your budget goes to the NEW list only.
    work and do not build a parity check.**
 3. Confirm the profile's **Repo-wide invariant guards** actually ran in the full
    gate. They are the guards scoped verification skips, so a guard that has
-   silently stopped running is itself a P1 finding.
+   silently stopped running is itself a P1 finding. On the same cadence, audit
+   the gate's own coverage: compare what its commands actually compile, run,
+   and boot against the profile's Quality gate claims, including its **Not
+   covered** list. Coverage that has drifted below what the profile claims is
+   itself a P1 finding — green means those commands passed, never that the
+   project works.
 4. Prune known-failures entries whose cause is gone.
 5. End your turn with the terse `QA-GREEN {tip, cycles}` (plus anything
    filed) — the Manager resumes you for the next cycle.

@@ -28,6 +28,10 @@ for a normal change; full is for cross-cutting work and the QA loop.
 
 - **Scoped:** e.g. `pnpm --filter <pkg> typecheck && pnpm --filter <pkg> test`
 - **Full:** e.g. `pnpm typecheck && pnpm test && pnpm build`
+- **Not covered:** the gate's blind spots — what even the full gate does not
+  compile, boot, or exercise (e.g. an app with no build script, layers that
+  need a device or live service). Green means these commands passed, never
+  more; agents must not mistake it for broader verification.
 - **Notes:** anything load-bearing — tests that need a display, a container, a
   network service, or that are known-slow.
 

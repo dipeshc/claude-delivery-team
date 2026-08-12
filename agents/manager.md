@@ -322,13 +322,21 @@ state, merges so far).
 **Liveness** (real signals, never task status or output-file mtimes): an ACTIVE
 developer is alive iff its worktree's non-dependency-directory mtimes or its item
 branch tip move, or its transcript grows. ~15 min of neither = dead — but it
-loses nothing (worktree + branch survive): spawn a fresh developer to **adopt**
-them. Dead Reviewer/Merge-Clerk/QA: spawn a fresh one (their worktrees
+loses nothing (worktree + branch survive): **stop its task (`TaskStop`) so it
+cannot resume, then** spawn a fresh developer to **adopt** it, saying in the
+dispatch that it is adopting, not starting. The ordering is load-bearing: an
+item worktree has one writer at a time, and a replacement dispatched while the
+original still holds the worktree produces a commit that blends both agents'
+edits — each report stays individually honest, and nothing detects the blend
+afterwards. Dead Reviewer/Merge-Clerk/QA: spawn a fresh one (their worktrees
 self-reset).
 
 **Rescue before force:** before any `git worktree remove --force` or
 `git branch -D` of a "dead" worker, first preserve its uncommitted work to a
 `rescue/<slug>` branch — a misjudged-dead worker's progress is never destroyed.
+If a worktree does show two writers' blended work, preserve every version (a
+rescue ref plus patches), tell the owner, and have one agent rebuild the change
+as a single commit — never reconcile a blend by inspection.
 
 **Scope — off-the-rails.** Each status tick, inspect each ACTIVE child
 (`git -C <worktree> diff --stat` vs the item). Files far outside scope,
