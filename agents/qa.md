@@ -33,22 +33,21 @@ place this project's specifics live: the **Quality gate** (scoped vs full), the
 **Backlog** location and conventions, the **Repo-wide invariant guards**,
 **Cross-surface parity**, the **Sanctioned direct-write paths** (which name your
 QA loop's own path), the **Worktree layout**, and the **Verification
-environment**. A section marked `n/a` means the requirement does not exist here
-— never invent one to fill it.
+environment**. `n/a` means the requirement does not exist here — never invent
+one to fill it.
 
 This file adds only the QA-specific detail.
 
 ## Why you exist — the fail-closed full run
 
-Most changes land through the charter's **direct lane**: implemented, verified
-with the profile's *scoped* gate, self-reviewed, landed. Scoped verification is
-the right default and it is also, by construction, partial — it runs what the
-changed package covers and silently skips everything else, including the
-repo-wide invariant guards that live outside that package.
+Most changes land through the charter's **direct lane**, verified with the
+profile's *scoped* gate. Scoped verification is the right default and it is
+also, by construction, partial — it runs what the changed package covers and
+silently skips everything else, including the repo-wide invariant guards that
+live outside that package.
 
 **Your full-gate run on every new tip is the independent verification that lane
-depends on.** It is the net under all of it. Two properties make it a net rather
-than a formality:
+depends on.** Two properties make it a net rather than a formality:
 
 - It is **full-scope** — it runs the profile's *full* gate, every package, every
   repo-wide guard, on the actual merged tip. Not the author's scope; the whole
@@ -145,9 +144,8 @@ environment** says which those are) unless the Manager sent
 **The script's exit output IS your triage** — it names every NEW failure inline
 and lists known ones as "(expected)". The status file carries the same split
 (new vs known/expected). **Trust that split**: known/expected failures are
-pre-filtered noise — never investigate them, never re-derive the split from the
-log, never spend a token confirming an expected failure is expected. Your budget
-goes to the NEW list only.
+pre-filtered noise — never investigate them and never re-derive the split from
+the log. Your budget goes to the NEW list only.
 
 1. Start from the failing test names already in the exit output / the status
    file's new-failure list; open only the log slices for those tests — never the

@@ -33,9 +33,9 @@ Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md), an
 this project's specifics live. The sections you will use constantly:
 **Specification source of truth**, **Quality gate**, **Worktree layout**,
 **Cross-surface parity**, **Project-specific content rules**, **Verification
-environment**, **Exploration log**, and **Backlog**. A section marked `n/a` means that requirement
-does not exist here — never invent one, and never carry a convention over from
-another project.
+environment**, **Exploration log**, and **Backlog**. `n/a` means that
+requirement does not exist here — never invent one, never carry a convention
+over from another project.
 
 ## Capability gate — check this before anything else
 
@@ -61,10 +61,10 @@ how you work:
 
 - **If docs are spec:** the code exists to satisfy them and on any doc-vs-code
   disagreement the docs win. Then **doc-first wherever a spike introduces new
-  observable behaviour** — a new endpoint, a new field, a new setting, a new
-  page, or any behaviour a reader would expect the spec to describe. Write that
-  spec first, in the right file under the docs root, plus a decision record for
-  a significant new choice (the profile names where those live), *then* build to
+  observable behaviour** — a new endpoint, field, setting, or page: any
+  behaviour a reader would expect the spec to describe. Write that spec first,
+  in the right file under the docs root, plus a decision record for a
+  significant new choice (the profile names where those live), *then* build to
   it. A spike whose behaviour contradicts the docs is a bug, not a feature.
 - **If docs are not spec:** the code is the truth and docs follow it. Still
   write the user-facing description of what your spike does before you build it
@@ -85,11 +85,10 @@ Two rules hold either way:
 
 Good spikes are **user-visible**, **small**, **self-contained**, and **in the
 project's spirit** — the kind of thing the product clearly wants more of, not a
-detour into a non-goal. Look to what already exists for the shape of a good
-idea: the surfaces the product already invests in, the lists and detail views
-and settings it already has. A spike that deepens one of those, or adds a
-sibling to it, is on-target. Prefer several small independent features over one
-sprawling one — small spikes are easier to judge, promote, or drop.
+detour into a non-goal. Take the shape of a good idea from what already exists:
+a spike that deepens a surface the product already invests in, or adds a
+sibling to one, is on-target. Prefer several small independent features over
+one sprawling one — small spikes are easier to judge, promote, or drop.
 
 Skip anything that:
 
@@ -155,21 +154,20 @@ Create it if it does not exist. You
   that the code lives on your exploration branch/tag. Enough for a later reader
   to decide whether to revisit; not a changelog.
 - **Move an item to the Merged section, with its SHA,** if and when a spike is
-  promoted. **Promotion is the team's job, not yours**: when the owner picks a
-  spike, a `P#-promote-<spike>` item is filed at the profile's **Backlog**
-  location referencing the spike's branch/tag + SHA, and a team developer adapts
-  it onto the current default branch as one reviewed commit (review + merge +
-  QA guard — the spike pays back the quality gate it skipped). You never merge,
-  cherry-pick, or file the promotion item yourself.
+  promoted. **Promotion is the team's job, not yours**: the owner's pick is
+  filed as a backlog item referencing the spike's branch/tag + SHA, and a team
+  developer adapts it onto the current default branch as one reviewed commit —
+  the spike pays back the quality gate it skipped. You never merge, cherry-pick,
+  or file the promotion item yourself.
 - Never delete a still-live exploration from the record; it is deleted only when
   the underlying idea is deliberately abandoned.
-- **Archive-tag a throwaway branch before you delete it.** A spike lives on its
-  own branch; when you tear that branch down (or the harness would
-  garbage-collect it), first tag its tip — e.g. `git tag explore/<feature>` — so
-  the code is preserved even with the branch gone. The tag is the durable
-  pointer to the bits; the exploration log is the human-readable index telling a
-  later reader which tag holds which spike. Never delete a branch whose commits
-  are not either merged to the default branch or reachable from such a tag.
+- **Archive-tag a throwaway branch before you delete it.** When you tear a
+  spike's branch down (or the harness would garbage-collect it), first tag its
+  tip — e.g. `git tag explore/<feature>` — so the code survives the branch. The
+  tag is the durable pointer to the bits; the exploration log is the index
+  telling a later reader which tag holds which spike. Never delete a branch
+  whose commits are not either merged to the default branch or reachable from
+  such a tag.
 
 ## Hard rules
 

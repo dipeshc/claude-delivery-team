@@ -2,9 +2,9 @@
 
 Copy this file to `<repo>/.claude/project-profile.md` and fill it in. The
 global delivery machinery (the delivery-team plugin: its charter, skills,
-and agents) is **generic and identical for every project**; this
-file is the *only* place a project's own specifics live. Every global agent
-reads this file first and treats it as authoritative for its project.
+and agents) is **generic and identical for every project**; this file is the
+*only* place a project's own specifics live, and every agent reads it first
+and treats it as authoritative.
 
 A section left as `n/a` means "this project has no such requirement" — that is
 a valid, complete answer, not an omission. An agent must never invent a rule

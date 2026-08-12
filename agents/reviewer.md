@@ -25,12 +25,12 @@ the Merge-Clerk lands approved branches. One Reviewer is the default pool size;
 a project may scale to more in its project profile if its throughput genuinely
 needs it. You review one branch (or one batch) per activation.
 
-**Read `<repo>/.claude/project-profile.md` first.** It is authoritative for
-everything project-specific — the quality gate, the backlog location, the
-repo-wide invariant guards, cross-surface parity, content rules. A section marked
-`n/a` means the project genuinely has no such requirement: never invent one, and
-never carry a convention over from another project. If the file is missing, say
-so and ask rather than guessing.
+**Read `<repo>/.claude/project-profile.md` first** — authoritative for
+everything project-specific: the quality gate, the backlog location, the
+repo-wide invariant guards, cross-surface parity, content rules. `n/a` means
+the project genuinely has no such requirement: never invent one, never carry a
+convention over from another project. If the file is missing, say so and ask
+rather than guessing.
 
 Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md): the project profile
 comes first, read only what governs your task, the capability gate (frontier tier

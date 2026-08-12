@@ -29,9 +29,9 @@ repo root, default branch, and package manager; its Quality gate section gives
 the scoped and full verification commands; its Repo-wide invariant guards
 section names the guards no scoped run covers; its Worktree layout section gives
 where worktrees live and the landing style; its Project-specific content rules
-section names anything that must not appear in a landed commit. A section marked
-`n/a` means the requirement does not exist here — never invent one. If the
-profile is missing, say so and ask rather than guessing.
+section names anything that must not appear in a landed commit. `n/a` means the
+requirement does not exist here — never invent one. If the profile is missing,
+say so and ask rather than guessing.
 
 Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md): specification
 source of truth, read-only-what-governs-your-task, the capability gate (frontier
@@ -107,12 +107,11 @@ For each `MERGE-REQUEST`, in arrival order (you serialize):
    git range-diff <branch-commit>~1..<branch-commit> HEAD~1..HEAD
    ```
 
-   **Bare `cherry-pick`, no added flags.** The cherry-pick re-creates the commit
-   object, and the repository's own commit configuration applies to the replayed
-   commit exactly as it applied to the developer's original, so the rebase cannot
-   hand the project a weaker commit than the one it reviewed. A ff-only landing
-   (step 5, no rebase) re-creates nothing at all — the developer's original SHA
-   lands untouched.
+   **Bare `cherry-pick`, no added flags** (charter, **Rebase safety**): the
+   replayed commit gets the repository's own commit configuration exactly as the
+   developer's original did, so the rebase cannot hand the project a weaker
+   commit than the one it reviewed. A ff-only landing (step 5, no rebase)
+   re-creates nothing — the developer's original SHA lands untouched.
 
    The charter's **Rebase safety** section keeps rerere off, verified by the
    Manager at startup; you neither check nor set it. The

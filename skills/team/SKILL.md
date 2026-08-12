@@ -25,10 +25,10 @@ branch.
    specifics live: repo root and default branch, quality-gate commands (scoped
    vs full), backlog location and conventions, repo-wide invariant guards,
    worktree layout and branch naming, sanctioned direct-write paths,
-   cross-surface parity. A section marked `n/a` genuinely means "no such
-   requirement here" — never invent one, never carry a convention over from
-   another project. **If the profile is missing, stop and tell the user** —
-   guessing the quality gate or the backlog convention wastes a whole cycle.
+   cross-surface parity. `n/a` genuinely means "no such requirement here" —
+   never invent one, never carry a convention over from another project. **If
+   the profile is missing, stop and tell the user** — guessing the quality gate
+   or the backlog convention wastes a whole cycle.
 2. **`${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md`** — the rules every team agent obeys (lane
    routing by risk, capability gate, repo's-own-tooling, scoped-writers,
    verification discipline, backlog conventions, message schemas). Read it once
@@ -61,18 +61,18 @@ the presumed-dead Manager a stand-down — it was presumed dead, a replacement i
 running, so it dispatches nothing and reports its state instead of resuming the
 pipeline. If it really is dead the message is inert; if it wakes, the
 stand-down makes the relaunch safe **only when it is read before the
-resurrected Manager acts** — message delivery ordering is not guaranteed, so a
-message already queued against it can fire on wake and be acted on first,
-ahead of the stand-down. Send it anyway: it is cheap and closes the gap
-whenever it does win that race. A heartbeat-driven relaunch does the same:
-liveness check first, stand-down in the same turn.
+resurrected Manager acts** — message delivery ordering is not guaranteed, so an
+already-queued message can fire on wake ahead of the stand-down. Send it
+anyway: it is cheap and closes the gap whenever it wins that race. A
+heartbeat-driven relaunch does the same: liveness check first, stand-down in
+the same turn.
 
 The ordering-independent backstop is `TaskStop`: stopping the resurrected
 Manager's task needs no cooperation from it, so it closes the window regardless
 of what either Manager has read. If two are running anyway, stop the one with
 **less context** — normally the one you just launched, since the resurrected
-instance still holds the run's ledger — by sending it a stand-down and stopping
-its task (`TaskStop`), and confirm the survivor knows it is now the only one.
+instance still holds the run's ledger — via a stand-down plus `TaskStop`, and
+confirm the survivor knows it is now the only one.
 Then check whether the overlap already
 landed something twice: `git -c log.showSignature=false log --oneline -10
 <default-branch>` for one item merged twice, a stray `CHERRY_PICK_HEAD` in the
@@ -98,11 +98,10 @@ moment you launch a Manager, `CronCreate` a recurring ~10-min job (off the round
 minute, e.g. `3,13,23,33,43,53 * * * *`) whose prompt re-invokes YOU to derive
 status from git, pull the Manager's ledger, **post an update to the user**, and
 recover a dead Manager — self-deleting when the backlog is DRAINED. This is the
-ONLY reliable update channel; do not rely on the Manager pushing (it forgets, and
-its push only reaches the user if you happen to be re-invoked to relay). See
-[Status relay](#status-relay) for the exact heartbeat prompt. One heartbeat per
-run: `CronList` first; never leave a duplicate or an orphaned heartbeat after
-`DRAINED`.
+ONLY reliable update channel; do not rely on the Manager pushing — see
+[Status relay](#status-relay) for why, and for the exact heartbeat prompt. One
+heartbeat per run: `CronList` first; never leave a duplicate or an orphaned
+heartbeat after `DRAINED`.
 
 **External engine (opt-in).** If — and only if — the profile's **External
 implementation engine** section declares one, the Manager routes engine work
@@ -134,8 +133,8 @@ not QA-only: QA runs it on a cadence, and you run it on demand. It already
 encodes the two phases (spec-vs-itself, then code-vs-spec), the
 docs-are-spec applicability gate, and the file-nothing-fix-nothing discipline —
 an ad-hoc prompt re-derives those inconsistently and loses whatever the last
-run learned. Improve the skill when a run exposes a gap; that is what makes the
-next audit better than this one.
+run learned. Improve the skill when a run exposes a gap; that is what makes
+each audit better than the last.
 
 ## Direct lane — skip the team for low-risk work
 
@@ -200,9 +199,9 @@ A new-item backlog commit is Root's sanctioned write to the main working tree
 Merge-Clerk.
 
 Remember the charter's item lifecycle: **an item is done when the merging commit
-deletes its item file.** A backlog file that outlives its merged work gets
-re-dispatched later — if you file an item in its own commit, make sure the
-landing commit still deletes it.
+deletes its item file** — a file that outlives its merged work gets
+re-dispatched, so if you file an item in its own commit, make sure the landing
+commit still deletes it.
 
 If the **Manager** sends `NEEDS-RESEARCH {item, question}` (an item that turned
 out to need real investigation), you decide: dispatch the same research spike, or
@@ -227,12 +226,12 @@ one poll, not a stall. Relay promptly anyway; don't sit on it.
 ## Status relay
 
 **The heartbeat cron is the primary channel — root pulls, it does not wait for a
-push.** Relying on the Manager to push every 10 min is a proven failure mode: the
-Manager gets absorbed in a long tool run and skips the cadence, and even when it
-does `SendMessage`, the report only reaches the user if root is independently
-re-invoked to relay it. So the heartbeat you install at spawn (see
-[Spawning](#spawning)) is what guarantees the user hears from the team. Its
-prompt — substitute the profile's default branch and branch-naming convention:
+push.** Relying on the Manager to push every 10 min fails: it gets absorbed in a
+long tool run and skips the cadence, and even when it does `SendMessage`, the
+report only reaches the user if root is independently re-invoked to relay it. So
+the heartbeat you install at spawn (see [Spawning](#spawning)) is what
+guarantees the user hears from the team. Its prompt — substitute the profile's
+default branch and branch-naming convention:
 
 > TEAM STATUS HEARTBEAT (auto). A delivery-team run is (or was) active. (1) Derive
 > real status from git — never task status alone: `git -c log.showSignature=false

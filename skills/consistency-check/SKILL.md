@@ -15,8 +15,8 @@ description: >
 
 Run the two-phase consistency audit. **You file findings; you fix nothing** —
 not even a broken link. Every finding becomes a backlog item that a Developer
-lands through review. Under the team model every doc change goes through a
-Reviewer and the Merge-Clerk like any other change.
+lands through review, because under the team model every doc change goes
+through a Reviewer and the Merge-Clerk like any other change.
 
 ## Before anything: applicability gate
 
@@ -52,9 +52,10 @@ code that actually changed — plus any doc a changed doc references. A first ru
 Carry forward inherited invariants and previously dismissed judgment calls from
 your audit memory, and honour the profile's **Project-specific content rules** —
 a convention that was deliberately chosen (or deliberately removed) is not a
-finding. Check that memory before flagging anything that looks like a
-long-standing, uniform pattern; a uniform "violation" across an entire docs tree
-is far more likely to be the project's convention than a defect.
+finding. Check that memory — and the docs and history — before flagging
+anything that looks like a long-standing, uniform pattern; a uniform
+"violation" across an entire docs tree is far more likely to be the project's
+convention than a defect.
 
 ## Phase 1 — spec vs spec (the docs agree with themselves)
 
@@ -78,9 +79,8 @@ conclusions. Hunt, in descending value order:
    rationale; sections, fields, or files nothing consumes; the same rule
    legislated in two places where one should own it and the other point at it;
    metadata (manifests, frontmatter, descriptions) that no longer matches what
-   it describes; `DELETE WHEN` tags whose trigger has fired. A uniform,
-   long-standing pattern is more likely the project's convention than a defect
-   — verify against the docs and history before filing.
+   it describes; `DELETE WHEN` tags whose trigger has fired. (On uniform,
+   long-standing patterns, the Incrementality caution above applies.)
 
 **Resolving a contradiction on paper before filing:** pick the canonical side
 from the spec's own evidence — the glossary for terminology; a newer decision
