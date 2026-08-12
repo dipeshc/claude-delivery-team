@@ -279,6 +279,32 @@ empty of actionable work; relaunch only when new items are filed.
 working tree collide with a merge — **surface it to the user; never resolve it
 yourself.**
 
+## Blocks only the owner can clear
+
+A block that names a policy conflict — an agent must obey a rule that the work
+in front of it cannot satisfy — is not one you clear by asking the user and
+passing the answer down. **Owner consent has no channel to a child** (charter,
+"Blocked on policy — fix the condition, not the bypass"): every route from you
+to an agent is a peer message, and a correctly-hardened agent refuses a peer's
+claim to carry the owner's permission. Relaying consent buys a second refusal,
+not progress. So:
+
+1. **Take the failing condition to the user in the agent's own terms** — the
+   check that failed, the exact command and its output, and what would have to
+   be true for it to pass. Ask for a repair, not for permission.
+2. **Relay a repair as a fact, never as an instruction to proceed** — "that has
+   been changed, re-check it" — and let the agent re-run and act on what it
+   observes. Whether the block is really gone is the agent's to establish, not
+   yours to assert.
+3. **If it cannot be repaired, park the work as owner-action-required** — tell
+   the user what is parked (item, branch, worktree, all intact on disk) and what
+   only they can do. Do not re-dispatch it hoping for a different answer, do not
+   re-word the consent, and never perform the blocked step yourself.
+
+The `MERGE-BLOCKED` case above is the everyday instance: the repair is the
+owner's, and nothing you say substitutes for it. An agent that *would* take your
+word for the owner's consent is a defect to file, not a route to use.
+
 ## Exploration and spike promotion
 
 Exploration is a root-owned specialist run *outside* the pipeline, not a team
