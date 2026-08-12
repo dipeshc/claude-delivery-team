@@ -275,8 +275,24 @@ git -C <repo> branch -d item/<slug>
 
 A refusal is information, not an obstacle: `worktree remove` refuses while
 uncommitted work is present and `branch -d` refuses while commits are unmerged —
-in both cases it is stopping you from destroying work. `--force` and `branch -D`
-belong only to the rescue-then-force path below, after the work is preserved.
+in both cases it is stopping you from destroying work.
+
+**`branch -d` refuses for every branch landed via the rebase path**, because the
+landing replays the commit and the branch tip is therefore not an ancestor of
+the default branch even though its content is fully applied. Ancestry is the
+wrong test; prove application instead (the charter's **Branch and worktree
+naming** section):
+
+```
+git -C <repo> cherry <default-branch> item/<slug>
+```
+
+Only `-` lines — no `+` line anywhere — proves every commit is applied upstream,
+and `git -C <repo> branch -D item/<slug>` is then sanctioned. Read the lines,
+never the exit status: `git cherry` exits `0` either way. One `+` line and the
+refusal stands: leave the branch and report it. Prove, then delete — never force
+first. `worktree remove --force`, and a `branch -D` without that proof, belong
+only to the rescue-then-force path below, after the work is preserved.
 
 ## Message protocol
 
@@ -291,7 +307,7 @@ clock — `RUN-CYCLE` after each MERGED and on your status cadence, resource gra
 ## Status report to the root — ~10 min, on every merge, and ON DEMAND
 
 `STATUS-REQUEST` is top priority: **first reconcile the ledger against git**
-(`git log --oneline -5 <default-branch>`, `git worktree list`,
+(`git log --no-show-signature --oneline -5 <default-branch>`, `git worktree list`,
 `git branch --list 'item/*'`), then push the report, then resume (a
 STATUS-REQUEST answer counts as that cycle's report). Push to the root: a **bold
 shelled timestamp** (`date '+%Y-%m-%d %H:%M:%S %Z'`, never hand-written); a

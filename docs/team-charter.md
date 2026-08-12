@@ -258,6 +258,34 @@ section; where it does, the profile wins and agents use its values. Where the
 profile is silent, these defaults apply — do not treat a silent profile as
 undefined.
 
+### Deleting a landed branch — prove, then delete
+
+Whenever the base moved under a branch, landing it replays its commit
+(**Rebase safety**, below) and lands that replay, leaving the `item/<slug>` ref
+pointing at the original commit object. The branch tip is then not an *ancestor*
+of the default branch even though its content is fully applied, so
+`git branch -d`, which tests ancestry, refuses it as "not fully merged". Since
+the base moving is the normal case, that refusal is the normal case too, and
+**ancestry is the wrong test for it**. The substitute proof is application:
+
+```
+git cherry <default-branch> item/<slug>
+```
+
+which marks each commit on the branch `-` (its patch is already applied
+upstream) or `+` (it is not). **Only `-` lines** — no `+` line anywhere — proves
+the branch's content is fully landed, and `git branch -D` is then sanctioned,
+not a policy violation. Read the lines, never the exit status: `git cherry`
+exits `0` either way. A single `+` line means the forced delete would destroy
+work, so the refusal stands: the Manager leaves the branch and reports it. The
+ordering is the rule — prove first, delete second, never force first and justify
+afterwards.
+
+This is a distinct path from the Manager's rescue-then-force route for a worker
+believed dead, which preserves that worker's uncommitted work before forcing
+anything. That route is untouched and this clause does not widen it: this one
+covers only a branch whose content is provably landed.
+
 ## Rebase safety — rerere stays off
 
 Every rebase in this framework is a cherry-pick plus a mandatory `git range-diff`
