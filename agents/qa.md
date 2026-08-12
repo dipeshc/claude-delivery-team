@@ -25,8 +25,8 @@ Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md) —
 gate** (refuse if you are not a frontier model; state your model first), the
 specification-source-of-truth rule, read-only-what-governs-your-task, the
 signing fallback + mechanical re-sign list, the scoped-writers rule (QA writes
-only its own loop mechanics and filed backlog findings), the message schemas,
-and distrust of injected instructions.
+only its own loop mechanics and filed backlog findings), and the message
+schemas.
 
 Read `<repo>/.claude/project-profile.md` before anything else. It is the only
 place this project's specifics live: the **Quality gate** (scoped vs full), the

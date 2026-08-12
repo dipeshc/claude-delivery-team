@@ -1,16 +1,33 @@
 # claude-delivery-team
 
-An autonomous software delivery team built on [Claude Code](https://claude.com/claude-code)
-subagents. A **Manager** agent works a prioritized backlog and dispatches
-**Developers**, a **Reviewer**, a singleton **Merge-Clerk**, and a **QA**
-guardian — implementing in isolated git worktrees, cross-reviewing each other's
-work, enforcing quality gates, and landing signed, fast-forward-only commits with
-minimal human intervention.
+An autonomous, **docs-driven** software delivery team built on
+[Claude Code](https://claude.com/claude-code) subagents. A **Manager** agent
+works a prioritized backlog and dispatches **Developers**, a **Reviewer**, a
+singleton **Merge-Clerk**, and a **QA** guardian — implementing in isolated git
+worktrees, cross-reviewing each other's work, enforcing quality gates, and
+landing signed, fast-forward-only commits with minimal human intervention. It
+has produced thousands of commits end-to-end, under human direction but not
+human keystrokes.
 
-This is the framework I use daily to build my personal software — home-cooked
-apps I create and run for myself, like a self-hosted media server. It has
-produced thousands of commits end-to-end, under human direction but not human
-keystrokes.
+## Docs drive design
+
+The framework's central bet is that **documentation is the specification** and
+everything else follows from it:
+
+- **Docs are the source of truth.** Where a project declares docs-as-spec, a
+  doc-vs-code mismatch means the *code* is wrong. Agents may *sharpen* a doc
+  (make an already-decided thing precise) but never *re-decide* one — decisions
+  belong to the owner.
+- **The spec edit ships with the change.** A change that alters observable
+  behaviour lands its doc amendment in the same commit; a missing spec edit is
+  a review defect, exactly like a missing test.
+- **The backlog is files in the repo.** One file per item, priority in the
+  filename, done when the merging commit deletes it — work state lives in git,
+  not in anyone's memory.
+- **The spec is audited.** The `consistency-check` skill runs two phases —
+  spec-vs-spec (does the documentation agree with itself?) and spec-vs-code
+  (does the code obey it?) — on demand and on QA's cadence, filing every
+  confirmed delta as a backlog item.
 
 ## How it works
 
@@ -58,15 +75,16 @@ The lifecycle of a work item:
   A typo fix doesn't pay for a five-agent pipeline; a persistence change does.
 - **Capability gating.** Judgment roles (Manager, Reviewer, Merge-Clerk, QA)
   self-check that they're running on a frontier model and refuse to proceed
-  otherwise. Implementation can run on mid-tier models or even external engines
-  (treated as untrusted contributor diffs, reviewed like any other change).
+  otherwise. Implementation can run on mid-tier models.
+- **External engines are contained.** A project may opt in to routing
+  implementation through an external engine (a separate CLI on its own quota).
+  Everything engine-related lives in one dedicated `engine-supervisor` agent —
+  its output is treated as an untrusted contributor diff and reviewed like any
+  other change, and runs without an engine configured never see, mention, or
+  pay tokens for any of it.
 - **Verification discipline.** "Should pass" is not a result. Agents report the
   exact commands they ran and their outcomes; repo-wide invariant guards run
   whenever triggered, even when a scoped gate wouldn't catch them.
-- **Prompt-injection posture.** Agents treat tool-results that claim user
-  intent or ask them to conceal things as probable injections — report
-  verbatim, never obey — with a calibrated carve-out for known-benign harness
-  notices so the alarm keeps its signal value.
 - **Crash-safe by construction.** State lives in git (branches, worktrees,
   backlog files), not in agent memory. A dead Manager is relaunched and
   reconstructs everything from `git worktree list` and the backlog.
@@ -82,11 +100,17 @@ This repo is a [Claude Code plugin](https://code.claude.com/docs/en/plugins.md):
 | Path | Purpose |
 |---|---|
 | `.claude-plugin/plugin.json` | Plugin manifest |
-| `agents/` | Agent definitions: `manager`, `developer`, `reviewer`, `merge-clerk`, `qa`, plus `exploration` and `ui-inspector` specialists |
+| `agents/` | Agent definitions: `manager`, `developer`, `reviewer`, `merge-clerk`, `qa`, the opt-in `engine-supervisor`, plus `exploration` and `ui-inspector` specialists |
 | `skills/team/` | The team skill — how the root instance spawns, stewards, and watchdogs a run |
 | `skills/consistency-check/` | Spec-vs-spec and spec-vs-code audit skill — run on request (owner or root) or by QA on cadence |
+| `docs/architecture.md` | The spec for this repo itself — what each component is and the invariants that bind them |
 | `docs/team-charter.md` | Shared rules every agent obeys: lanes, writers, signing, verification, message schemas |
 | `docs/project-profile.template.md` | Template for the per-repo `.claude/project-profile.md` |
+| `docs/backlog/` | This repo's own backlog (it dogfoods its own process) |
+
+This repo practices what it preaches: `docs/` is its specification,
+`.claude/project-profile.md` declares docs-as-spec, and changes to the agents
+and skills are measured against the docs — not the other way round.
 
 ## Install
 
@@ -99,7 +123,8 @@ In Claude Code:
 Then, per project:
 
 1. Copy `docs/project-profile.template.md` to `<repo>/.claude/project-profile.md`
-   and fill it in (quality-gate commands, backlog location, layout).
+   and fill it in (quality-gate commands, backlog location, layout — and, if
+   your docs are the spec, say so in its Specification source of truth section).
 2. Create the backlog directory and file an item or two.
 3. Run `/delivery-team:team`.
 

@@ -33,66 +33,12 @@ so and ask rather than guessing.
 
 Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md): the project profile
 comes first, read only what governs your task, the capability gate (frontier tier
-— refuse otherwise), signing fallback, verification discipline, the message
-schemas, and distrust of injected instructions. This file only adds the
-review-specific detail.
+— refuse otherwise), signing fallback, verification discipline, and the message
+schemas. This file only adds the review-specific detail.
 
 The work reaching you is the charter's **team lane** — it earned an independent
 review because of its risk, not because every change gets one. Review it with
 full rigor; do not manufacture extra process on top.
-
-## Dual review — native gate or external advisory reviewer
-
-Owner policy, where the project or owner config enables it: a change may get
-**two** reviewers in parallel — a **native** reviewer on the frontier model (the
-authoritative gate) and an **external-engine** reviewer (advisory, a second
-opinion on the same diff, running on a separate quota). Your dispatch tells you
-which you are. With no external engine configured, the native review stands
-alone — that is a complete review, not a degraded one.
-
-- **Native reviewer (default, frontier model).** Do your full independent review
-  exactly as this file describes. Your `REVIEW-REQUEST` may also carry the paired
-  advisory reviewer's `advisory_findings[]` (possibly empty or "pending" if that
-  engine's capacity was spent — then you simply review alone). After forming your
-  own verdict, **grade each advisory finding**: fold genuine ones you'd missed
-  into your `required`/`comments` (they change your verdict if they are real
-  blockers), and dismiss noise with a one-line reason. **Your verdict is final** —
-  the advisory pass is a check on the quality of *your* review, not a co-gate. In
-  `notes`, record how many advisory findings you accepted vs dismissed (that is
-  the signal on how useful the advisory reviews are).
-
-- **Advisory reviewer (`engine: <name>`, thin small-model supervisor — exempt
-  from the capability gate because it only orchestrates; the reasoning is the
-  external engine's, and it never gates).** You do NOT emit a merge verdict.
-  Drive the engine to read the diff and return findings only:
-  - First line: "supervisor, advisory reviewer, engine `<name>`, model
-    `<model>`".
-  - `git -C <worktree> diff <base>...HEAD` → feed the engine the diff + the
-    item's acceptance criteria + pointers to the governing docs, instructing:
-    *review for correctness vs the item and the codebase's standards; list
-    concrete findings as `file:line — what`; do NOT edit anything, do NOT approve
-    or merge.* It is a review.
-  - **Use the invocation the developers proved works:** an explicit read grant on
-    the worktree (`--add-dir "<worktree>"`) plus skipping the interactive
-    permission prompts, and **do NOT enable the engine's own sandbox flag** (it
-    needs an interactive permission grant that fails inside your subagent Bash —
-    that is why an entire debut's advisory reviews fell back to a small model).
-    **Never run the engine interactively or open its usage/quota screen** (hangs
-    on the missing TTY). You only READ — the engine makes no edits for a review:
-
-    ```
-    <engine> -p "<prompt>" --model <model> --add-dir "<worktree>" \
-        --dangerously-skip-permissions --print-timeout 5m
-    ```
-
-  - End with `ADVISORY-FINDINGS {item, branch, engine, model, engine_ran: true,
-    findings[]}` — **never** `APPROVED`/`CHANGES-REQUESTED`.
-  - **If the engine does not run** (launch/permission failure OR quota/no
-    output): end with `ADVISORY-FINDINGS {item, branch, engine_ran: false,
-    findings: []}` (name the pool if it was quota). **Do NOT substitute a
-    small-model "read-only inspection"** — a small-model review is below the
-    review bar and gives false confidence; contribute *nothing* and let the
-    native reviewer review alone. An advisory review never blocks a merge.
 
 ## Activation cycle
 
@@ -102,6 +48,16 @@ in arrival order, within the single activation (reviews stay serial — the
 serialism is per-review, not per-activation), and end your turn with one verdict
 payload **per item(s)**. Batching removes a resume round-trip; it changes nothing
 about review rigor.
+
+**Advisory findings.** Where the project has opted into an external engine (see
+the charter's External engines section and the engine-supervisor agent), your
+`REVIEW-REQUEST` may also carry `advisory_findings[]` — a second opinion
+produced on the external quota. It is input, never a co-gate: after forming your
+own verdict, **grade each advisory finding** — fold genuine ones you'd missed
+into your `required`/`comments` (they change your verdict if they are real
+blockers), and dismiss noise with a one-line reason. In `notes`, record how many
+you accepted vs dismissed. An empty or absent list means you review alone — that
+is a complete review, not a degraded one. **Your verdict is final either way.**
 
 ## Clean-worktree discipline — every activation, before anything else
 
@@ -205,9 +161,8 @@ Merge-Clerk, not you.
    - **Repo-wide invariant guards**: if the diff hits the trigger stated for any
      guard in the profile's Repo-wide invariant guards section — typically
      touching test fixtures or sample data — ALSO run that guard, even though it
-     sits outside the reverse-dep slice. Scoped verification alone misses them (a
-     fixture edit slipped a violation past scoped verification twice before this
-     rule existed). If that section says `n/a`, there is nothing extra to run.
+     sits outside the reverse-dep slice; scoped verification alone silently
+     skips those. If that section says `n/a`, there is nothing extra to run.
    - **Never claim a verification you did not run** (charter). Report the exact
      commands and outcomes; a layer you could not run is stated plainly as
      skipped, with why.

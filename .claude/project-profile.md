@@ -1,0 +1,109 @@
+# Project profile — `claude-delivery-team`
+
+This repo dogfoods the framework it ships. The global delivery machinery (the
+charter, skills, and agents) is generic; this file holds everything specific to
+working on *this* repository.
+
+---
+
+## Repo
+
+- **Root path:** `/Users/dipesh/code/claude-delivery-team`
+- **Default branch:** `main`
+- **Package manager / runtime:** n/a — prose-only repo (Markdown agent
+  definitions, skills, and docs; no build, no runtime).
+- **Layout:**
+  - `.claude-plugin/` — plugin manifest.
+  - `agents/` — the team's agent definitions.
+  - `skills/` — the `team` and `consistency-check` skills.
+  - `docs/` — the spec: `architecture.md` (entry doc), `team-charter.md`,
+    `project-profile.template.md`, and `backlog/`.
+
+## Quality gate
+
+- **Scoped:** n/a — there is no test suite; the diff is prose. The reviewer's
+  reading against `docs/architecture.md` and `docs/team-charter.md` IS the
+  verification.
+- **Full:** n/a — the `consistency-check` skill (spec-vs-spec, then
+  spec-vs-code over the agent/skill definitions) is this repo's full audit.
+- **Notes:** every relative link and `${CLAUDE_PLUGIN_ROOT}` path referenced in
+  a changed file must resolve to a file that exists in the repo.
+
+## Backlog
+
+- **Location:** `docs/backlog/` (per-item files, priority in the filename,
+  `P0`–`P3`).
+- **Conventions doc:** n/a — the charter's "Backlog conventions" section is the
+  convention.
+- **Item lifecycle:** the merging commit deletes the item file.
+
+## Specification source of truth
+
+- **Docs are spec?** Yes. `docs/architecture.md` and `docs/team-charter.md`
+  specify the framework; the agent files under `agents/` and the skills under
+  `skills/` implement them. A mismatch means the agent/skill file is wrong —
+  unless the change is a deliberate re-decision, which is an owner call and
+  updates the spec first. `docs/project-profile.template.md` is a shipped
+  artifact whose example values describe consuming projects, not this repo.
+- **Docs root:** `docs/`
+- **Decision records:** n/a
+- **Conventions doc:** n/a — match the surrounding prose style and the existing
+  git log (Conventional Commits).
+
+## Repo-wide invariant guards
+
+- n/a — no automated guards; the containment and agnosticism rules below are
+  enforced by review and the consistency check.
+
+## QA watch loop
+
+- n/a — no watch loop; QA (or the root, on request) runs the
+  `consistency-check` skill directly.
+
+## UI surfaces
+
+- n/a — no UI.
+
+## Exploration log
+
+- n/a
+
+## Cross-surface parity
+
+- n/a — single surface.
+
+## Sanctioned direct-write paths
+
+- `docs/backlog/` — filed items.
+- `.claude/` — this profile.
+
+## Worktree layout
+
+- **Where worktrees are created:** `<repo>/.claude/worktrees/<name>/`
+- **Branch naming:** `item/<slug>`
+- **Landing style:** fast-forward only, one commit per item.
+
+## Reviewer pool
+
+- n/a — the default single Reviewer.
+
+## Project-specific content rules
+
+- **Stay project-agnostic:** no file may reference any specific consuming
+  project, product, or domain the framework has been used on. The only
+  permitted usage claim is the README's "thousands of commits" line.
+- **External-engine containment:** engine mechanics (invocation, pools, modes,
+  engine messages) may appear only in `agents/engine-supervisor.md`; every
+  other file may at most point there.
+- **No vestigial history:** no dated incident anecdotes or references to past
+  iterations of the framework. A rule states its rationale in the present
+  tense; harness workarounds carry a `DELETE WHEN` sunset tag instead of a
+  backstory.
+
+## External implementation engine
+
+- n/a
+
+## Verification environment
+
+- n/a — a plain checkout is everything; there is nothing to run.

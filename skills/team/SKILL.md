@@ -31,9 +31,8 @@ branch.
    guessing the quality gate or the backlog convention wastes a whole cycle.
 2. **`${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md`** — the rules every team agent obeys (lane
    routing by risk, capability gate, signing/re-sign, scoped-writers,
-   verification discipline, backlog conventions, external engines, message
-   schemas, distrust of injected instructions). Read it once so your watchdog
-   judgments match the agents' rules.
+   verification discipline, backlog conventions, message schemas). Read it once
+   so your watchdog judgments match the agents' rules.
 
 Throughout this skill, `<repo>`, `<default-branch>`, `<backlog>`, and the gate
 commands are whatever the profile says they are.
@@ -73,18 +72,13 @@ its push only reaches the user if you happen to be re-invoked to relay). See
 run: `CronList` first; never leave a duplicate or an orphaned heartbeat after
 `DRAINED`.
 
-**Developer engine.** The Manager can implement items via the primary model or
-an **external implementation engine** (a separate CLI/quota pool) where the
-owner or the profile configures one — see `${CLAUDE_PLUGIN_ROOT}/agents/developer.md`
-("Implementation engine"), `${CLAUDE_PLUGIN_ROOT}/agents/manager.md` ("Engine & model
-choice"), and the charter's **External implementation engines** section for the
-invariants (implementation only; external output is an untrusted contributor
-diff; the supervising agent owns the commit; sandboxed to its own worktree;
-capacity discovered reactively via `ENGINE-UNAVAILABLE`). Pass an engine
-preference through in the args if the owner specifies one; otherwise it is the
-Manager's discretion within the profile's configuration. The tool-grant check
-below is unaffected — the developer already carries `Bash` for the shell-out, so
-no new grant is needed.
+**External engine (opt-in).** If — and only if — the profile's **External
+implementation engine** section declares one, the Manager routes engine work
+through the dedicated `delivery-team:engine-supervisor` agent, which contains
+everything engine-related (both modes, invariants, messages, and the Manager's
+dispatch guidance). Pass an engine preference through in the args if the owner
+specifies one; otherwise it is the Manager's discretion within the profile's
+configuration. Where no engine is declared, engines do not exist for the run.
 
 **Tool-grant spot-check:** each agent's frontmatter `tools:` should match its
 least-privilege scope — the Manager, Reviewers, and Merge-Clerk carry no
@@ -111,9 +105,9 @@ Before filing anything, decide **which lane the item belongs in** (charter,
 to actual risk"). This decision happens once, at intake — it is not something
 the Manager re-litigates per item.
 
-**Team lane** (worktree, Developer, dual review, Merge-Clerk — the rest of this
-skill): auth/security/crypto, data-model or persistence changes, cross-package
-interfaces, cross-surface parity work, or a multi-phase feature.
+**Team lane** (worktree, Developer, independent review, Merge-Clerk — the rest
+of this skill): auth/security/crypto, data-model or persistence changes,
+cross-package interfaces, cross-surface parity work, or a multi-phase feature.
 
 **Direct lane** (the default for everything else — single-area, small expected
 diff, existing test coverage): skip the Manager entirely. Root (or one mid-tier

@@ -130,9 +130,27 @@ vocabulary, licensing/attribution requirements, placeholder conventions).
 
 - `n/a` if none.
 
+## External implementation engine
+
+An optional, separate coding CLI on its own account/quota that the team may
+drive for implementation and advisory reviews (see the plugin's
+`engine-supervisor` agent — everything engine-related lives there). Most
+projects leave this `n/a`; with it `n/a` or absent, engines do not exist for a
+run and no agent will mention or plan around one.
+
+- **Engine CLI:** the command name, or a pointer to an owner-level engine
+  config that holds it.
+- **Pools and model IDs:** the canonical model IDs per pool (or the pointer to
+  the owner-level config that names them).
+- **Reserved work classes:** work that must stay on the primary model
+  regardless (e.g. anything security/auth/crypto).
+- **Advisory reviews:** yes/no — whether team-lane changes get a non-gating
+  external second opinion.
+- `n/a` if this project uses no external engine.
+
 ## Verification environment
 
 - Anything an agent needs to know to run this project locally: required
-  services, mounted media, credentials that exist vs. are absent, and which
+  services or data sets, credentials that exist vs. are absent, and which
   test layers can/can't be run in the current environment.
 - `n/a` if a plain checkout runs everything.

@@ -1,13 +1,13 @@
 {
   "name": "delivery-team",
   "displayName": "Delivery Team",
-  "version": "1.0.0",
-  "description": "Autonomous software delivery team for Claude Code: a Manager works a prioritized backlog, dispatching Developers, parallel Reviewers, a singleton Merge-Clerk, and a QA guardian across isolated git worktrees.",
+  "version": "1.1.0",
+  "description": "Docs-driven autonomous software delivery team for Claude Code: documentation is the specification, and a Manager works a prioritized file-based backlog against it — dispatching Developers, a Reviewer, a singleton Merge-Clerk, and a QA guardian across isolated git worktrees.",
   "author": {
     "name": "Dipesh Chauhan"
   },
   "homepage": "https://github.com/dipeshc/claude-delivery-team",
   "repository": "https://github.com/dipeshc/claude-delivery-team",
   "license": "MIT",
-  "keywords": ["agents", "multi-agent", "delivery", "backlog", "code-review", "worktrees"]
+  "keywords": ["agents", "multi-agent", "delivery", "backlog", "code-review", "worktrees", "docs-as-spec", "spec-driven"]
 }

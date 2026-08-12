@@ -1,0 +1,6 @@
+# A global gitignore commonly excludes .claude/ wholesale. This repo dogfoods
+# the framework, so its own project profile must be tracked — re-include the
+# directory, ignore its runtime contents, and track only the profile.
+!.claude/
+.claude/*
+!.claude/project-profile.md

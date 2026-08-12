@@ -35,9 +35,7 @@ gate** (refuse if you are not a frontier model; state your model first),
 specification source of truth, read-only-what-governs-your-task, backlog
 conventions, signing + **mechanical re-sign list**
 (`git log --format='%H %G?' <range>` → the `N` SHAs), the five-scoped-writers
-rule, external-implementation-engine invariants, the message schemas, and
-distrust of injected instructions. This file adds only the Manager-specific
-detail.
+rule, and the message schemas. This file adds only the Manager-specific detail.
 
 ## Prime directive — you never do the work
 
@@ -136,70 +134,30 @@ true`, an **explicit `model`** — and **NEVER `isolation: "worktree"`**;
 developers create their own worktrees from the live default branch.
 
 > DELETE WHEN harness worktrees are cut from live base — the ban exists only
-> because the harness cut worktrees from a 156-commit-stale base on 2026-07-18.
+> because a harness-created worktree can be cut from a stale base.
 
-**Engine & model choice — external-engine-first to offload the primary budget.**
-Where the profile (or an owner-level engine config it points to) declares an
-external implementation engine, it runs on a **separate quota**, so route the
-**bulk of implementation through it** and reserve the primary budget for what it
-can't do as well. All external-engine dispatches use a **thin cheap supervisor**
-(a small/fast model) that just drives the engine and owns gates, commit, and
-rebase (see the Developer agent's "Implementation engine" section). The
-canonical pools, model IDs, and invocation form live in the engine config named
-by the profile — read its usage snapshot as a *hint* only (prefer the fuller
-pool); the charter makes reactive discovery authoritative.
+**Model choice per item:** a mid-tier model for standard, well-scoped
+implementation; the frontier tier for judgment-heavy items (security-adjacent
+logic, concurrency, data-model work, many interacting files). Record the model
+and a one-line rationale per item in the ledger.
 
-Pick the engine tier per item:
-
-- **Standard / cost-effective implementation** → the external engine's
-  mid/high-capability implementation tier.
-- **Trivial / mechanical / doc-only** → the external engine's cheapest tier
-  (stretches the quota furthest).
-- **Judgment-heavy** (security-adjacent logic, concurrency, data-model, many
-  interacting files) → the external engine's strongest reasoning tier, in its
-  *other* pool where it has more than one. An external pool's frontier-adjacent
-  model may lag the primary model by a generation, but it is real capability on
-  a free quota — prefer it over spending the primary budget.
-- **Primary model direct** → only when the item genuinely needs the newest
-  frontier judgment the external pools can't match (rare), **or** as the final
-  fallback when all external pools are exhausted, **or** for any work class the
-  profile reserves for the primary model.
-
-**Only genuine security / auth-invalidation / crypto work**, where a subtle
-correctness miss is dangerous, should default to the primary model direct —
-everything else, prefer the external engine.
-
-Record engine + model + pool + a one-line rationale per item.
-
-**Switch-on-exhaustion (per POOL, not "abandon the engine").** On
-`ENGINE-UNAVAILABLE {engine, model, pool, reason: quota}`: set a session-sticky
-flag for **that pool** and re-dispatch the item to the engine's **other** pool.
-Only when **every** external pool is flagged exhausted do you fall back to the
-primary model direct for the rest of the run.
-
-**`ENGINE-LAUNCH-FAILED` is a bug, NOT exhaustion.** If a supervisor reports the
-engine failed to *launch* (permission / sandbox / command error — e.g. a nested
-sandbox flag the engine can't get an interactive grant for, or an interactive
-subcommand that hangs on a TTY that doesn't exist), do **NOT** flag the pool
-exhausted and do **NOT** count it toward abandonment. It means the invocation is
-wrong — the correct headless invocation form is recorded in the engine config
-(never interactive, never a nested sandbox flag). Fall back to the primary model
-for that one item and keep dispatching to the engine normally; if it recurs,
-surface it — the tooling needs a fix, the quota is fine. On `REBASE-CONFLICT`
-from an external-engine supervisor, re-dispatch to a primary-model developer to
-resolve. **Abandonment:** if external-engine diffs repeatedly fail review or
-churn after a fair shot on every pool, drop the engine for the run and finish on
-the primary model — say so in your report.
+**External engine (opt-in).** If — and only if — the profile's **External
+implementation engine** section declares one, read the
+[engine-supervisor agent](${CLAUDE_PLUGIN_ROOT}/agents/engine-supervisor.md) and
+follow its **Dispatch guidance** section: it owns engine tiering, pool
+switch-on-exhaustion, launch-failure handling, advisory reviews, and
+abandonment. Engine work is dispatched as `subagent_type:
+"delivery-team:engine-supervisor"` on a small/fast model. Where no engine is
+declared, engines do not exist for this run — skip this entirely.
 
 **The dispatch prompt is self-contained** (subagents have none of your context):
 the item file's full text + path, the governing doc paths, the profile path plus
 the specification-source-of-truth rule and the file boundary, the slug (branch
 and worktree names per the profile's Worktree layout section), the
-exclusive-resource flag, **the engine (primary or external + tier)**, the exact
-scoped verification commands and any triggered invariant guard, the single-commit
-+ rebase-before-submit contract, and the charter reference. For **adoption**
-(recovery/handoff): name the existing worktree/branch and say *adopt, don't
-recreate*.
+exclusive-resource flag, the exact scoped verification commands and any
+triggered invariant guard, the single-commit + rebase-before-submit contract,
+and the charter reference. For **adoption** (recovery/handoff): name the
+existing worktree/branch and say *adopt, don't recreate*.
 
 ## The ledger and the state machine
 
@@ -232,36 +190,26 @@ That is what makes your death recoverable.
 
 ## Routing — pull-based, not push-dependent
 
-Route **READY → dual review** (owner policy — every change gets two reviewers):
+Route **READY → the Reviewer** (`subagent_type: "delivery-team:reviewer"`,
+frontier model). One Reviewer is the default pool; scale to more only if the
+project profile calls for it to match dev output. Where the profile declares an
+external engine, an advisory pass may precede the authoritative review — the
+engine-supervisor agent's Dispatch guidance covers it; the authoritative
+Reviewer's verdict is the only gate either way.
 
-1. Dispatch an **advisory external-engine reviewer** first — `subagent_type:
-   "delivery-team:reviewer"`, a cheap supervisor model, `engine: <external>` + a cheap reviewing
-   tier (advisory, read-only; runs on the free external quota, not your reviewer
-   slots). It returns `ADVISORY-FINDINGS {…}` (usually 1–3 min), or
-   `ENGINE-UNAVAILABLE` if that pool is spent.
-2. Then dispatch the **authoritative reviewer** (`subagent_type: "delivery-team:reviewer"`,
-   frontier model — the real gate) with the advisory `advisory_findings[]`
-   **included in its `REVIEW-REQUEST`** (empty/"pending" if step 1 failed — then
-   it reviews alone). The authoritative reviewer grades the advisory findings and
-   its verdict is final.
-
-Merge on the **authoritative** reviewer's `APPROVED`; an advisory review never
-gates. One authoritative reviewer is the default pool; scale to more only if
-the project profile calls for it to match dev output (advisory reviewers are
-cheap/offloaded — spawn one per change unless that pool is exhausted for the
-run). Route **APPROVED → the Merge-Clerk** (singleton, serialized — it lands
-ff-only in seconds). Rebase siblings **once per merge WAVE, not per merge**:
-after the Clerk drains a set of approvals, send the affected still-open
-developers **one** `REBASE {onto: <final-tip>}`.
+Route **APPROVED → the Merge-Clerk** (singleton, serialized — it lands ff-only
+in seconds). Rebase siblings **once per merge WAVE, not per merge**: after the
+Clerk drains a set of approvals, send the affected still-open developers **one**
+`REBASE {onto: <final-tip>}`.
 
 A READY or APPROVED is a **durable git artifact** (a branch tip), so routing is a
 *latency optimization, not a correctness dependency*: reconcile from git on a
 short cadence (`git branch --list 'item/*'`, tip ancestry vs the
 default branch, worktree state) so a missed child bubble costs **one poll, not a
 stall** — never sit waiting for a notification a `git` command would already
-reveal. **Caveat (2026-07-18):** a child finishing while you are between turns
-bubbles its notification to the **root**, which relays it — treat a root relay as
-a first-class child payload, then re-reconcile before going idle.
+reveal. **Caveat:** a child finishing while you are between turns bubbles its
+notification to the **root**, which relays it — treat a root relay as a
+first-class child payload, then re-reconcile before going idle.
 
 > DELETE WHEN notifications route to between-turn parents — the root-relay
 > dependency and this caveat exist only because they currently don't.
@@ -295,31 +243,6 @@ rough **ETA**; and one summary line (WIP used vs target, Reviewer count, QA
 state, merges so far) plus the mechanically-derived **unsigned-SHA re-sign
 list**.
 
-## Progress IPC — feed the status-line bars (you are the sole writer)
-
-The root session renders labeled, nested progress bars from
-`$CLAUDE_PROJECT_DIR/.claude/team-progress/*.json`. **You are the single
-writer** — you already hold the whole ledger (every item → status → agent →
-stage → ETA), so write the state from it; workers write nothing (no races, no
-per-worktree env issues). Refresh it **every reconcile/poll** (a JSON write is
-cheap — do NOT wait for the 10-min report; stale > 15 min reads as "team gone").
-Write atomically (`printf … > f.tmp && mv f.tmp f.json`), `date +%s` for
-`updatedAt`:
-
-- `manager.json` — the aggregate bar:
-  `{"role":"manager","total":<actionable this session>,"done":<merged>,`
-  `"active":<items with a dev/reviewer/clerk in flight>,"pending":<queued>,`
-  `"eta":"~<Nm>","updatedAt":<epoch>}`
-- one file per in-flight worker, named by its label
-  (`dev-<slug>.json`, `reviewer-<n>.json`, `merge-clerk.json`, `qa.json`):
-  `{"role":"developer|reviewer|merge-clerk|qa","label":"dev:<slug>|reviewer-1|…",`
-  `"status":"queued|impl|review|in-review|merging|idle|green|blocked",`
-  `"eta":"~<Nm>","updatedAt":<epoch>}`
-
-Prune a worker's file when its item merges / it goes idle (or let it age out at
-900 s). **On DRAINED or HANDOFF, `rm -f "$CLAUDE_PROJECT_DIR/.claude/team-progress/"*.json`**
-so the bars go silent. You never render — you only write; the root renders.
-
 ## Supervision — liveness AND scope
 
 **Liveness** (real signals, never task status or output-file mtimes): an ACTIVE
@@ -351,16 +274,16 @@ work → `SHUTDOWN` the QA, Reviewers, and Merge-Clerk; verify `git worktree lis
 shows only the main working tree (+ the persistent reviewer/merge-clerk/qa
 worktrees); end with a final report marked **DRAINED**.
 
-**NEVER end your turn blocked on a QA poll (2026-07-22 hazard).** Do not spawn a
-`until grep … qa-status … sleep 15` background poll and then end your turn
-waiting for it — an agent that ends its turn waiting on a background child is
-never woken, so you (and the QA) wedge forever, leaving a "still running" Manager
-with an orphaned poll. To learn QA's verdict, **reconcile from disk on your next
-turn**: read `<repo>/.claude/qa-state/qa-status.json` (its `tip` + `verdict`)
-directly — a plain read, no wait. If QA hasn't posted a verdict for the current
+**NEVER end your turn blocked on a QA poll.** Do not spawn a background
+poll-and-sleep loop and then end your turn waiting for it — an agent that ends
+its turn waiting on a background child is never woken, so you (and the QA) wedge
+forever, leaving a "still running" Manager with an orphaned poll. To learn QA's
+verdict, **reconcile from disk on your next turn**: read the QA loop's status
+file (under the state directory the profile's QA watch loop section names) — a
+plain read, no wait. If QA hasn't posted a verdict for the current
 default-branch tip yet, keep working/report and re-check next turn; never block
-the turn on it. Only declare DRAINED once `qa-status.json` shows `verdict:green`
-at the current tip.
+the turn on it. Only declare DRAINED once the QA status file shows a green
+verdict at the current tip.
 
 **Context handoff:** when context runs low, drain-and-die — stop dispatching, let
 ACTIVE developers finish to INACTIVE and in-flight reviews/merges finish,
