@@ -48,6 +48,31 @@ backlog automatically); do not spawn. Dead (~15 min with none of those signals)
 → recover per the watchdog section, then relaunch. Any safety-net cron runs this
 same check first.
 
+**Those signals are necessary but not sufficient.** They describe the Manager
+*now*; they cannot see a message you have already queued against it, and
+delivery of that message resurrects it — so a Manager that is dead by every
+signal can still return minutes after you relaunch. Before relaunching, account
+for what you have sent it: a SendMessage you have neither a reply to nor git
+evidence it acted on is still undelivered, and undelivered means **may return**,
+not dead.
+
+So make the relaunch safe by default. In the same turn you relaunch, SendMessage
+the presumed-dead Manager a stand-down — it was presumed dead, a replacement is
+running, so it dispatches nothing and reports its state instead of resuming the
+pipeline. If it really is dead the message is inert; if it wakes, it reads the
+stand-down before it can act. A heartbeat-driven relaunch does the same:
+liveness check first, stand-down in the same turn.
+
+If two are running anyway, stop the one with **less context** — normally the one
+you just launched, since the resurrected instance still holds the run's ledger —
+by sending it a stand-down and stopping its task (`TaskStop`), and confirm the
+survivor knows it is now the only one. Then check whether the overlap already
+landed something twice: `git -c log.showSignature=false log --oneline -10
+<default-branch>` for one item merged twice, a stray `CHERRY_PICK_HEAD` in the
+main working tree or a clerk worktree, and `git branch --list 'item/*'` for two
+branches covering one item. Report the outcome to the user either way — "nothing
+landed twice" is a result worth stating.
+
 ## Spawning
 
 Agent tool, `subagent_type: "delivery-team:manager"`, `run_in_background: true`, the user's
@@ -241,13 +266,14 @@ report/recover per the watchdog section.
 Liveness = merges on the default branch, item-branch tip movement, worktree
 mtimes, transcript growth — **never** output-file mtime, **never** task status
 alone. A dead Manager takes its children with it but loses nothing: every branch
-and worktree survives on disk. Recovery: relaunch a fresh Manager — it
-reconstructs from `git worktree list`, `git branch --list 'item/*'`, and the
-backlog, and spawns fresh Developers that **adopt** the parked worktrees. A
-completed Manager task ending in `HANDOFF: relaunch manager` → relay its interim
-report and relaunch immediately with the same args + its state block. Ending in
-**DRAINED** → the backlog is empty of actionable work; relaunch only when new
-items are filed.
+and worktree survives on disk. Recovery: relaunch a fresh Manager — under the
+relaunch discipline in [Never two Managers](#never-two-managers), stand-down
+included — and it reconstructs from `git worktree list`,
+`git branch --list 'item/*'`, and the backlog, and spawns fresh Developers that
+**adopt** the parked worktrees. A completed Manager task ending in
+`HANDOFF: relaunch manager` → relay its interim report and relaunch immediately
+with the same args + its state block. Ending in **DRAINED** → the backlog is
+empty of actionable work; relaunch only when new items are filed.
 
 `MERGE-BLOCKED` in a report means the owner's uncommitted edits in the main
 working tree collide with a merge — **surface it to the user; never resolve it
