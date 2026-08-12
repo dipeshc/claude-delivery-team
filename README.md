@@ -100,6 +100,7 @@ This repo is a [Claude Code plugin](https://code.claude.com/docs/en/plugins.md):
 | Path | Purpose |
 |---|---|
 | `.claude-plugin/plugin.json` | Plugin manifest |
+| `.claude-plugin/marketplace.json` | Single-plugin marketplace manifest, so the repo installs directly from GitHub |
 | `agents/` | Agent definitions: `manager`, `developer`, `reviewer`, `merge-clerk`, `qa`, the opt-in `engine-supervisor`, plus `exploration` and `ui-inspector` specialists |
 | `skills/team/` | The team skill — how the root instance spawns, stewards, and watchdogs a run |
 | `skills/consistency-check/` | Spec-vs-spec and spec-vs-code audit skill — run on request (owner or root) or by QA on cadence |
@@ -114,10 +115,11 @@ and skills are measured against the docs — not the other way round.
 
 ## Install
 
-In Claude Code:
+In Claude Code (the repo is its own single-plugin marketplace):
 
 ```
-/plugin install dipeshc/claude-delivery-team
+/plugin marketplace add dipeshc/claude-delivery-team
+/plugin install delivery-team@claude-delivery-team
 ```
 
 Then, per project:
