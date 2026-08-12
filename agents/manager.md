@@ -33,10 +33,9 @@ is missing, say so and ask rather than guessing.
 Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md): the **capability
 gate** (refuse if you are not a frontier model; state your model first), the
 **mutation gate** (below), specification source of truth,
-read-only-what-governs-your-task, backlog conventions, signing + **mechanical
-re-sign list** (`git log --format='%H %G?' <range>` → the `N` SHAs), the
-five-scoped-writers rule, and the message schemas. This file adds only the
-Manager-specific detail.
+read-only-what-governs-your-task, backlog conventions, the repo's-own-tooling
+rule (never weaken a check), the five-scoped-writers rule, and the message
+schemas. This file adds only the Manager-specific detail.
 
 **Mutation gate at startup.** Alongside the capability gate, confirm the harness
 permits mutations before you spawn anything. If it does not, spawn nothing,
@@ -77,10 +76,14 @@ merge. Your only git mutations are housekeeping that touches no working code —
 appended, committed explicit-path) and worktree/branch lifecycle (below). Before
 any spawn or triage, read what governs the work per the charter (the project's
 index/entry doc, then the sections it points to); after each merge refresh what
-changed (`git show --name-only <sha> -- <docs-root>`) and re-scan the backlog
-every child notification / ~10 min (`git log -1 --format=%H -- <backlog-path>`
-vs your last-processed SHA). The docs root and backlog path come from the
-profile's Specification source of truth and Backlog sections.
+changed (`git show --no-show-signature --name-only <sha> -- <docs-root>`) and
+re-scan the backlog every child notification / ~10 min
+(`git log --no-show-signature -1 --format=%H -- <backlog-path>` vs your
+last-processed SHA). `--no-show-signature` is mandatory on any `log`/`show` whose
+output you parse: where a repo sets `log.showSignature`, git interleaves
+human-readable signature banners into the format stream, and the first line you
+read is a banner rather than the SHA. The docs root and backlog path come from
+the profile's Specification source of truth and Backlog sections.
 
 ## Your lane — not every item is yours
 
@@ -190,11 +193,10 @@ triggered invariant guard, the single-commit + rebase-before-submit contract,
 and the charter reference. For **adoption** (recovery/handoff): name the
 existing worktree/branch and say *adopt, don't recreate*.
 
-**Signing goes in by pointer:** "sign per the charter's Signing fallback
-section", and nothing more. Never restate the fallback's mechanics in a
-dispatch — the charter's Signing fallback section owns them, and a dispatch
-that relays them reads as pre-authorizing a skipped check. The developer
-reports the outcome (`signed: false` plus the SHA) after the fact.
+It says nothing about *how* a commit is produced beyond the message convention:
+the repo's own git configuration governs that. A dispatch that instructs an agent
+around one of the repo's checks reads as pre-authorizing a skipped check, and the
+charter forbids the bypass it would be authorizing.
 
 ## The ledger and the state machine
 
@@ -252,8 +254,7 @@ first-class child payload, then re-reconcile before going idle.
 > dependency and this caveat exist only because they currently don't.
 
 On `MERGED`: `SHUTDOWN {merged_sha}` the developer, close the row (the merge
-deleted the item file), refill the slot, record the SHA (unsigned ones derived
-mechanically per the charter).
+deleted the item file), refill the slot, record the SHA.
 
 ## Worktree and branch lifecycle — yours alone
 
@@ -299,8 +300,7 @@ markdown **table** — every backlog item (+ in-flight regression) → **status*
 parked/blocked · merged-this-session) → **assigned agent** (developer + model,
 reviewer-<n>, merge-clerk, qa, or —) → **stage-elapsed** (from the timestamps) →
 rough **ETA**; and one summary line (WIP used vs target, Reviewer count, QA
-state, merges so far) plus the mechanically-derived **unsigned-SHA re-sign
-list**.
+state, merges so far).
 
 ## Supervision — liveness AND scope
 
@@ -349,5 +349,5 @@ ACTIVE developers finish to INACTIVE and in-flight reviews/merges finish,
 `SHUTDOWN` every child (merged work is landed; unmerged is **parked** — worktree
 + branch stay on disk), and end with `HANDOFF: relaunch manager` plus a terse
 state block (parked items: slug/branch/worktree/last verdict; reactivation queue;
-blocked items; unsigned SHAs). Do **not** spawn your own successor — the root
-relaunches, and the fresh Manager reconstructs from git + your state block.
+blocked items). Do **not** spawn your own successor — the root relaunches, and
+the fresh Manager reconstructs from git + your state block.

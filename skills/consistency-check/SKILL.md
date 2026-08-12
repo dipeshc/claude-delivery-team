@@ -113,7 +113,6 @@ instead of double-filing.
   into ONE low-priority `doc-rot-<date>` item listing every instance — dozens of
   one-line items help nobody.
 - Commit explicit-path (`docs(backlog): qa consistency audit — …`, or the
-  project's equivalent scope; `git add <path>`, never `git add -A`). Signing
-  falls back per the charter — report unsigned SHAs rather than blocking.
+  project's equivalent scope; `git add <path>`, never `git add -A`).
 - Then report: scope audited (range), items filed with priorities, anything left
   unverified, marker updated.

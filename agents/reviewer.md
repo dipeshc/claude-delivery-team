@@ -34,8 +34,9 @@ so and ask rather than guessing.
 
 Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md): the project profile
 comes first, read only what governs your task, the capability gate (frontier tier
-— refuse otherwise), signing fallback, verification discipline, and the message
-schemas. This file only adds the review-specific detail.
+— refuse otherwise), the repo's-own-tooling rule (never weaken a check),
+verification discipline, and the message schemas. This file only adds the
+review-specific detail.
 
 The work reaching you is the charter's **team lane** — it earned an independent
 review because of its risk, not because every change gets one. Review it with

@@ -6,7 +6,7 @@ and a root-dispatched Researcher. Each agent file references this charter
 instead of restating these rules; where an agent adds a role-specific twist it
 says so at its own point of use. When this charter and an agent file disagree,
 the more specific agent file wins for that role, but the invariants below
-(writers, signing) are floor rules no role overrides.
+(writers, verification) are floor rules no role overrides.
 
 **This charter is generic and identical for every project.** Everything
 project-specific — quality-gate commands, backlog location, invariant guards,
@@ -136,42 +136,23 @@ stay on the primary frontier model.
 **Where no engine is declared, engines do not exist for the run** — no agent
 mentions one, plans around one, or waits on one.
 
-## Signing fallback
+## The repo's own tooling governs — never weaken a check
 
-**Owner-authorised, and it overrides the global "never use `--no-gpg-sign`"
-rule.** That global rule exists to stop an agent quietly disabling a check to
-make a problem go away. This is the opposite: a *declared*, *reported*, and
-*reversible* fallback for an unreachable signing agent, with the SHA tracked
-for a later bulk re-sign that is content-verified. A signing failure never
-blocks delivery. Do not treat a `--no-gpg-sign` fallback taken under this
-clause as a policy violation, and do not report it as one.
+**Run plain commands and let the repository's configuration do its job.** Agents
+run `git commit`, the profile's gate commands, and nothing more elaborate;
+whatever the repo is configured to do — hooks, commit policy, formatters —
+happens as configured, invisibly to the agent. The framework requires no
+particular value for any of those settings, reports on none of them, and never
+disables one to get its own way. A project's git and tooling policy is that
+project's business.
 
-The rule still stands for everything it was written for: never `--no-verify`,
-never skip a test or a guard, never widen an allowlist to make a check pass.
-
-Sign commits via the configured signing key. If the signing agent is
-unreachable, retry **once**, then commit unsigned (`--no-gpg-sign`) and report
-`signed: false`. Signing never blocks work. Every unsigned SHA goes on the
-re-sign list; re-signing is owner-owned and happens later — it never gates
-delivery.
-
-**In dispatches and messages, cite this clause by reference — never restate
-it.** A dispatch says "sign per the charter's Signing fallback section" and
-stops there. Relaying the fallback's mechanics inline puts a literal
-skip-the-check instruction into a prompt; to anything that inspects prompts
-rather than this charter, that reads as an agent pre-authorizing itself to
-weaken a check. The fallback is reported *after the fact* —
-`signed: false` plus the SHA — and never granted ahead of time in a prompt.
-
-**The re-sign list is derived mechanically, never hand-accumulated.** Over any
-range:
-
-```
-git -C <repo> log --format='%H %G?' <range>
-```
-
-the SHAs whose `%G?` is `N` are the unsigned set. Report that set; do not keep
-a parallel hand-maintained tally that can drift.
+**Never pass a flag that disables a check the repo imposes.** No `--no-verify`,
+no skipping a test or a guard, no widening an allowlist, no bypass flag reached
+for on your own initiative. If a command fails because tooling it depends on is
+unavailable, that is an **ordinary failure**: report the exact command and how it
+failed, like any other failed command, and stop. Retrying into a bypass turns a
+visible, fixable environment fault into a silently weaker artifact, and the agent
+that took the bypass is the only one who knows.
 
 ## Verification discipline
 
@@ -313,6 +294,13 @@ exactly why local scope suffices.
 Every other role treats rerere as already off and relies on the range-diff proof
 as its backstop; none of them re-check or re-set it.
 
+**The cherry-pick carries no extra flags.** It re-creates the commit object, and
+the repository's own commit configuration applies to the replayed commit exactly
+as it applied to the original — so a rebase the framework performs never yields a
+weaker commit than the author produced. Adding flags to "preserve" something the
+configuration already governs is how that guarantee gets broken, not how it is
+kept.
+
 ## Batch related work
 
 When several items share files or form a real dependency chain, land them as
@@ -347,7 +335,7 @@ distinct roles.
 | Reviewer → Manager | `CHANGES-REQUESTED` | `{item, branch, comments[], required[]}` |
 | Reviewer → Manager | `REBASE-REQUIRED` | `{item, branch, base, reason}` |
 | Manager → Merge-Clerk | `MERGE-REQUEST` | `{item(s), branch, head}` |
-| Merge-Clerk → Manager | `MERGED` | `{item(s), sha, signed}` |
+| Merge-Clerk → Manager | `MERGED` | `{item(s), sha}` |
 | Merge-Clerk → Manager | `MERGE-BLOCKED` | `{reason}` (surfaced to Root immediately) |
 | Merge-Clerk → Manager | `REBASE-REQUIRED` | `{item, branch, base, reason}` (clerk rebase hit real conflicts) |
 | Manager → Developer | `FEEDBACK` / `REBASE` / `SHUTDOWN` | `{branch, comments, required[]}` / `{branch, onto}` / `{merged_sha \| reason}` |

@@ -31,8 +31,9 @@ so and ask rather than guessing.
 
 Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md): the project profile
 comes first, read only what governs your task, the specification source of
-truth, signing fallback, verification discipline, and the scoped-writers rule.
-This file adds the developer-specific detail.
+truth, the repo's-own-tooling rule (never weaken a check), verification
+discipline, and the scoped-writers rule. This file adds the developer-specific
+detail.
 
 You operate in the charter's **team lane** — the item reached you because it is
 risky, cross-cutting, or multi-phase enough to earn the full pipeline. Run the
@@ -94,9 +95,10 @@ pad a group.
 
 Conventional Commit, matching the repo's existing commit style and any
 conventions doc the profile points at: type, scope, combined user-visible effect;
-full body; no AI co-author or session trailers. Sign; if the signing agent is
-unreachable, retry once then commit with `--no-gpg-sign` and report
-`signed: false` — signing never blocks work.
+full body; no AI co-author or session trailers. Commit with a plain `git commit`
+and add no flags of your own: whatever the repo's git configuration does happens
+as configured. If the commit fails, report the command and its failure and stop
+— never reach for a flag that switches the failing check off.
 
 ## Verify inside the worktree
 

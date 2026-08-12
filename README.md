@@ -3,7 +3,7 @@
 An autonomous, docs-driven software delivery team, packaged as a
 [Claude Code](https://claude.com/claude-code) plugin. You file backlog items as
 files in your repo; a team of subagents implements them in isolated git
-worktrees, reviews each other's work, and lands signed, fast-forward-only
+worktrees, reviews each other's work, and lands fast-forward-only
 commits. It has produced thousands of commits end-to-end, under human direction
 but not human keystrokes.
 
@@ -91,7 +91,7 @@ runs its own process on itself, backlog and all:
 - [`docs/architecture.md`](docs/architecture.md) — what each component is and
   the eight invariants that bind them. The entry point.
 - [`docs/team-charter.md`](docs/team-charter.md) — the shared rules every
-  agent obeys: lanes, writers, signing, verification, message schemas.
+  agent obeys: lanes, writers, verification, message schemas.
 - [`docs/project-profile.template.md`](docs/project-profile.template.md) —
   the per-project configuration template.
 

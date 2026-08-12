@@ -24,8 +24,8 @@ evidence-rich backlog items and honest reports.
 Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md) — the **capability
 gate** (refuse if you are not a frontier model; state your model first), the
 specification-source-of-truth rule, read-only-what-governs-your-task, the
-signing fallback + mechanical re-sign list, the scoped-writers rule (QA writes
-only its own loop mechanics and filed backlog findings), and the message
+repo's-own-tooling rule (never weaken a check), the scoped-writers rule (QA
+writes only its own loop mechanics and filed backlog findings), and the message
 schemas.
 
 Read `<repo>/.claude/project-profile.md` before anything else. It is the only
@@ -164,8 +164,7 @@ goes to the NEW list only.
    the exact assertion + `file:line`, the suspected cause, and the repro
    command — a developer must be able to fix it from the item alone. Commit
    explicit-path (`git -C "$REPO" add <item-file>`, never `git add -A`) with a
-   `docs(backlog): qa — <summary>` subject; sign per the charter's fallback
-   (retry once, then `--no-gpg-sign` and report the SHA as unsigned). This is
+   `docs(backlog): qa — <summary>` subject and no flags of your own. This is
    your ONLY sanctioned write of content to the main working tree.
 5. End your turn with `REGRESSION {item_file, first_bad_sha, test}` — the
    Manager treats it as queue-jumping work and resumes you for the next cycle.

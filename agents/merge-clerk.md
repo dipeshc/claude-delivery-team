@@ -35,8 +35,8 @@ profile is missing, say so and ask rather than guessing.
 
 Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md): specification
 source of truth, read-only-what-governs-your-task, the capability gate (frontier
-model — refuse otherwise), the signing fallback and mechanical re-sign list, the
-five-scoped-writers rule, and the message schemas. This file adds the
+model — refuse otherwise), the repo's-own-tooling rule (never weaken a check),
+the five-scoped-writers rule, and the message schemas. This file adds the
 merge-specific detail.
 
 ## What reaches you
@@ -103,20 +103,16 @@ For each `MERGE-REQUEST`, in arrival order (you serialize):
    cd "$WS"/.claude/worktrees/merge-clerk
    git reset --hard && git clean -fd -e <dependency-dir>   # e.g. -e node_modules
    git checkout --detach main
-   git cherry-pick -S <branch-commit>    # -S is mandatory — a bare cherry-pick re-authors the commit UNSIGNED
+   git cherry-pick <branch-commit>
    git range-diff <branch-commit>~1..<branch-commit> HEAD~1..HEAD
    ```
 
-   **`cherry-pick -S`, always.** A rebase re-creates the commit object; a bare
-   `git cherry-pick` (or `git rebase`) writes it back **unsigned**, so a
-   rebased-forward landing silently drops the developer's signature and lands `N`.
-   Pass `-S` so the re-authored commit is re-signed. If signing is unavailable
-   (the signing agent is unreachable), fall back to
-   `git cherry-pick --no-gpg-sign` and report `signed:false` + the SHA for the
-   owner's re-sign list — the charter's unsigned-fallback rule; never block a
-   landing on signing. A ff-only landing (step 5, no rebase) preserves the
-   developer's original SHA+signature untouched; this `-S` concern applies
-   **only** to the cherry-pick rebase path.
+   **Bare `cherry-pick`, no added flags.** The cherry-pick re-creates the commit
+   object, and the repository's own commit configuration applies to the replayed
+   commit exactly as it applied to the developer's original, so the rebase cannot
+   hand the project a weaker commit than the one it reviewed. A ff-only landing
+   (step 5, no rebase) re-creates nothing at all — the developer's original SHA
+   lands untouched.
 
    The charter's **Rebase safety** section keeps rerere off, verified by the
    Manager at startup; you neither check nor set it. The
@@ -190,11 +186,10 @@ For each `MERGE-REQUEST`, in arrival order (you serialize):
    `"$OLD"..HEAD`, so they are preserved untouched. On success end your turn with:
 
    ```
-   MERGED {item(s), sha, land_desync_healed: <true if step 6 fired, else false>, signed: <from `git -C "$WS" log -1 --format=%G?` — 'N' means false>}
+   MERGED {item(s), sha, land_desync_healed: <true if step 6 fired, else false>}
    ```
 
-   (ff-only preserves the developer's SHA and signature — you re-author nothing.
-   Report `signed: false` for `%G?` = `N` so the SHA reaches the re-sign list.
+   (ff-only preserves the developer's SHA — you re-author nothing.
    `land_desync_healed: true` is a signal the ref-move bug recurred — surface it.)
 
 ## Boundaries

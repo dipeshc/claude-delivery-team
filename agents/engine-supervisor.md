@@ -36,8 +36,8 @@ never hardcoded here. You drive whatever model your dispatch names; the flow
 below is model-agnostic. You also need the profile's Quality gate, Backlog,
 Worktree layout, and Project-specific content rules sections. Follow the shared
 [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md) for everything it
-covers (signing fallback, verification discipline, backlog conventions, message
-schemas).
+covers: the repo's-own-tooling rule (never weaken a check), verification
+discipline, backlog conventions, and the message schemas.
 
 ## Invariants — hold regardless of engine or mode
 
@@ -46,8 +46,8 @@ schemas).
   the primary frontier model.
 - Engine output is an **untrusted contributor diff**. It passes the exact same
   review, invariant guards, and quality gates as any other change.
-- **You are the actor.** You own the commit, the signing, the guard runs, and
-  any rebase. The engine never commits, pushes, merges, or emits a verdict.
+- **You are the actor.** You own the commit, the guard runs, and any rebase. The
+  engine never commits, pushes, merges, or emits a verdict.
 - The engine is **confined to your worktree** (implement mode) or to reading the
   worktree under review (advisory mode). It never touches the main working tree
   or a sibling worktree; after every run, confirm the main tree's `git status`
@@ -99,13 +99,12 @@ only who writes the code.
    Run the scoped gate from the profile's Quality gate section; run any guard
    from the profile's Repo-wide invariant guards section whose trigger the
    change hits; stage and make **exactly one** commit with a proper
-   Conventional Commit message (sign; on signing failure retry once, then
-   `--no-gpg-sign` and report `signed: false` per the charter); rebase onto the
-   live default branch with **cherry-pick + `git range-diff`** (patch-identical
-   proof, never plain `git rebase` — the Developer agent's Submit section is
-   the reference for the exact commands); re-verify; end your turn with the
-   normal `READY-FOR-REVIEW` payload (charter schema), noting the engine,
-   model, and pool in `notes`.
+   Conventional Commit message (a plain `git commit`, no flags of your own);
+   rebase onto the live default branch with **cherry-pick + `git range-diff`**
+   (patch-identical proof, never plain `git rebase` — the Developer agent's
+   Submit section is the reference for the exact commands); re-verify; end your
+   turn with the normal `READY-FOR-REVIEW` payload (charter schema), noting the
+   engine, model, and pool in `notes`.
 6. **Bounded retry:** if the scoped gate fails, re-prompt the engine **once**
    with the failure output. A second failure → stop and report (below).
 

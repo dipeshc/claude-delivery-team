@@ -30,7 +30,7 @@ branch.
    another project. **If the profile is missing, stop and tell the user** —
    guessing the quality gate or the backlog convention wastes a whole cycle.
 2. **`${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md`** — the rules every team agent obeys (lane
-   routing by risk, capability gate, signing/re-sign, scoped-writers,
+   routing by risk, capability gate, repo's-own-tooling, scoped-writers,
    verification discipline, backlog conventions, message schemas). Read it once
    so your watchdog judgments match the agents' rules.
 
@@ -149,8 +149,7 @@ external services, comparing design options)
 - **No** (the ask is already a well-formed item) → write the item file yourself
   into the profile's backlog location, following its stated conventions
   (priority in the filename), and commit it explicit-path
-  (`docs(backlog): …` or the project's equivalent scope; unsigned fallback, note
-  the SHA per the charter's mechanical re-sign rule).
+  (`docs(backlog): …` or the project's equivalent scope).
 - **Yes** → dispatch a **research spike**: spawn a `general-purpose` agent
   (background, frontier model) with the question and this brief — *investigate
   for real (read the code, reproduce, probe the service, measure — never reason
@@ -213,17 +212,20 @@ prompt — substitute the profile's default branch and branch-naming convention:
 > ~60s; if dead (~15 min no merges / no branch+worktree movement / no live task)
 > recover per the watchdog — relaunch a fresh Manager with the same args. (3)
 > **Post a short update TO THE USER**: timestamp, what landed (SHAs), what's in
-> flight (item branch + last activity), anything BLOCKED/NEEDS-RESEARCH, unsigned
-> SHAs to re-sign. Never a bare "it's quiet". (4) If the backlog is DRAINED and
-> the default branch is idle: tell the user the run is complete and `CronDelete`
-> this heartbeat (find its id via `CronList`).
+> flight (item branch + last activity), anything BLOCKED/NEEDS-RESEARCH. Never a
+> bare "it's quiet". (4) If the backlog is DRAINED and the default branch is
+> idle: tell the user the run is complete and `CronDelete` this heartbeat (find
+> its id via `CronList`).
+
+The `-c log.showSignature=false` on that `git log` is mandatory, not decorative:
+where a repo enables `log.showSignature`, git interleaves human-readable
+signature banners into log output, and a heartbeat parsing it reports banners as
+commits.
 
 The Manager's own push (a report table: items → status → assigned agent +
-developer model / reviewer-<n> / merge-clerk → stage-elapsed → rough ETA →
-unsigned SHAs) still arrives on merges and is a welcome *supplement* — relay it
-when it lands, cross-checked against git. But never depend on it; the heartbeat
-is the floor. Aggregate unsigned SHAs across reports under "Unsigned commits —
-need re-signing" (derived mechanically per the charter, never hand-tallied).
+developer model / reviewer-<n> / merge-clerk → stage-elapsed → rough ETA) still
+arrives on merges and is a welcome *supplement* — relay it when it lands,
+cross-checked against git. But never depend on it; the heartbeat is the floor.
 
 **On-demand status ("what's the status?").** Don't make the user wait for the
 cadence: (1) SendMessage the Manager a `STATUS-REQUEST` — it reconciles its
