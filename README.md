@@ -2,7 +2,7 @@
 
 An autonomous software delivery team built on [Claude Code](https://claude.com/claude-code)
 subagents. A **Manager** agent works a prioritized backlog and dispatches
-**Developers**, parallel **Reviewers**, a singleton **Merge-Clerk**, and a **QA**
+**Developers**, a **Reviewer**, a singleton **Merge-Clerk**, and a **QA**
 guardian — implementing in isolated git worktrees, cross-reviewing each other's
 work, enforcing quality gates, and landing signed, fast-forward-only commits with
 minimal human intervention.
@@ -21,7 +21,7 @@ flowchart TD
     R -->|direct lane| D0[Small change: implement directly,<br/>scoped gate, ff-merge]
     M --> DEV1[Developer<br/>worktree: item/a]
     M --> DEV2[Developer<br/>worktree: item/b]
-    DEV1 -->|READY-FOR-REVIEW| REV[Reviewers ×2–3<br/>parallel, independent]
+    DEV1 -->|READY-FOR-REVIEW| REV[Reviewer<br/>one by default, project-scalable]
     DEV2 -->|READY-FOR-REVIEW| REV
     REV -->|APPROVED| MC[Merge-Clerk<br/>singleton, ff-only]
     REV -->|CHANGES-REQUESTED| DEV1
@@ -39,8 +39,10 @@ The lifecycle of a work item:
    multi-phase work takes the *team lane*.
 3. **Implement** — a Developer gets its own git worktree on `item/<slug>`,
    produces the change as one commit, and rebases onto the default branch.
-4. **Review** — independent Reviewers judge correctness *and* re-verify by
-   running the quality gate themselves. Reviewers carry no write access at all.
+4. **Review** — an independent Reviewer judges correctness *and* re-verifies by
+   running the quality gate itself. One Reviewer by default; a project may scale
+   to more in its project profile if its throughput genuinely needs it.
+   Reviewers carry no write access at all.
 5. **Land** — the Merge-Clerk, the only writer of code to the main tree,
    fast-forward-merges the approved branch. The merging commit deletes the
    item's backlog file — merging is what marks work done.
@@ -82,7 +84,7 @@ This repo is a [Claude Code plugin](https://code.claude.com/docs/en/plugins.md):
 | `.claude-plugin/plugin.json` | Plugin manifest |
 | `agents/` | Agent definitions: `manager`, `developer`, `reviewer`, `merge-clerk`, `qa`, plus `exploration` and `ui-inspector` specialists |
 | `skills/team/` | The team skill — how the root instance spawns, stewards, and watchdogs a run |
-| `skills/consistency-check/` | Spec-vs-spec and spec-vs-code audit skill used by QA on cadence |
+| `skills/consistency-check/` | Spec-vs-spec and spec-vs-code audit skill — run on request (owner or root) or by QA on cadence |
 | `docs/team-charter.md` | Shared rules every agent obeys: lanes, writers, signing, verification, message schemas |
 | `docs/project-profile.template.md` | Template for the per-repo `.claude/project-profile.md` |
 

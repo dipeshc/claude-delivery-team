@@ -115,6 +115,13 @@ normal review pipeline (everything else lands via the pipeline).
 - **Branch naming:** e.g. `item/<slug>`
 - **Landing style:** e.g. fast-forward only, one commit per item.
 
+## Reviewer pool
+
+- **Instance count:** the framework default is a single Reviewer. Set a higher
+  number here only if this project's dev throughput genuinely needs more than
+  one Reviewer draining the queue in parallel.
+- `n/a` to take the default of one.
+
 ## Project-specific content rules
 
 Any rule about what may or may not appear in code, docs, tests, or commit

@@ -1,14 +1,15 @@
 ---
 name: consistency-check
 description: >
-  Two-phase specification audit for a docs-as-spec project, run by the QA agent
-  on its green-heartbeat cadence (or on demand): phase 1 makes sure the spec
-  agrees with ITSELF (contradictions, terminology drift, broken links/anchors,
-  decision-record coherence), phase 2 measures the CODE against the spec (docs
-  are truth; every confirmed delta is a code bug). All findings are FILED as
-  backlog item files — nothing is fixed in place. Requires a frontier model.
-  Applicability depends on the project profile's "Specification source of
-  truth" section.
+  Two-phase specification audit for a docs-as-spec project: phase 1 makes sure
+  the spec agrees with ITSELF (contradictions, terminology drift, broken
+  links/anchors, decision-record coherence), phase 2 measures the CODE against
+  the spec (docs are truth; every confirmed delta is a code bug). All findings
+  are FILED as backlog item files — nothing is fixed in place. Run it whenever
+  a docs-vs-docs or docs-vs-code audit is wanted: on request from the owner or
+  the root instance, ad hoc against a recent change, or by the QA agent on its
+  green-heartbeat cadence. Requires a frontier model. Applicability depends on
+  the project profile's "Specification source of truth" section.
 ---
 
 Run the two-phase consistency audit. **You file findings; you fix nothing** —

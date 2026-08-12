@@ -2,7 +2,7 @@
 name: team
 description: >
   Run the delivery team over this project's backlog — spawn the singleton
-  Manager (which runs Developers, parallel Reviewers, the singleton Merge-Clerk
+  Manager (which runs Developers, the Reviewer, the singleton Merge-Clerk
   and the QA), route work to the direct or team lane, file or delegate backlog
   items, relay the Manager's status reports, and watchdog the pipeline. Use when
   the user asks to run the team, work the backlog, or invokes /team. Works in
@@ -13,9 +13,11 @@ Launch and steward the delivery **team**. The root instance (you) stays thin:
 you **route by lane, spawn the Manager, file items, surface `MERGE-BLOCKED`,
 and watchdog** — you never triage, implement, review, or merge on the team lane.
 The Manager owns the whole delivery loop: Developers implement in per-item
-worktrees, 2–3 parallel **Reviewers** judge correctness and emit `APPROVED`, the
-singleton **Merge-Clerk** lands approved work ff-only (the only writer of code to
-the main working tree), the **QA** guards the default branch.
+worktrees, a **Reviewer** (one by default; the project profile may scale to
+more if its throughput genuinely needs it) judges correctness and emits
+`APPROVED`, the singleton **Merge-Clerk** lands approved work ff-only (the only
+writer of code to the main working tree), the **QA** guards the default
+branch.
 
 ## Read these two files first
 
@@ -89,6 +91,18 @@ least-privilege scope — the Manager, Reviewers, and Merge-Clerk carry no
 `Write`/`Edit` beyond their sanctioned paths (Reviewers and the Merge-Clerk carry
 none at all; a Reviewer needing Write is a red flag). Spot-check this when you
 touch an agent file; a widened grant is a scope leak.
+
+## Auditing the spec on request — use the skill, don't improvise
+
+When the owner asks for a documentation-consistency check, a docs-vs-code
+check, or "is the spec still true after all this", invoke the
+**`consistency-check`** skill rather than hand-writing an audit prompt. It is
+not QA-only: QA runs it on a cadence, and you run it on demand. It already
+encodes the two phases (spec-vs-itself, then code-vs-spec), the
+docs-are-spec applicability gate, and the file-nothing-fix-nothing discipline —
+an ad-hoc prompt re-derives those inconsistently and loses whatever the last
+run learned. Improve the skill when a run exposes a gap; that is what makes the
+next audit better than this one.
 
 ## Direct lane — skip the team for low-risk work
 

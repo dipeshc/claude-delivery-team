@@ -52,6 +52,16 @@ item, never made inside a work item.
 If the profile says docs are not spec, the code is the truth and docs follow it;
 say which you are working under when it matters to a judgment you report.
 
+**The spec edit ships with the change.** Where docs are spec, a change that
+alters externally observable behaviour lands its doc edits in the *same* commit
+as the code. A behaviour change whose spec still describes the old behaviour is
+incomplete, not landable — the reviewer treats a missing spec edit as a defect,
+exactly like a missing test. This is a forward obligation on every item, not
+something a later audit is expected to catch: drift found afterwards has
+already been read as truth by someone. It does not license re-deciding — the
+sharpen-versus-re-decide line above still holds — and a change with no
+externally observable effect needs no doc edit.
+
 ## Route work by risk, not by habit
 
 Not every change earns the full pipeline. Decide the lane at intake:
@@ -200,6 +210,26 @@ make sure the landing commit still deletes it.
 
 "Last" always means last among *unblocked* work. An ordering constraint
 sequences the machine's own queue; it never makes the machine wait on a human.
+
+### Item shape — a handoff contract
+
+An item is a handoff contract: a capable-but-cheaper implementer, or a future
+agent with no memory of why it was filed, must be able to action it cold
+without re-deriving context. Every item file states:
+
+- **What's wrong** — one sentence.
+- **Evidence** — concrete citations (`file:line` or equivalent), verified by
+  reading, not inferred.
+- **Consequence** — what it costs if unfixed.
+- **Acceptance criteria** — explicit and testable; names the test(s) that must
+  exist when done.
+- **Exact files to change** — the concrete targets.
+- **Suggested approach** — a direction, not a prescription that removes
+  judgment.
+
+Whoever files an item owns this shape — a filed item that can't be actioned
+cold is incomplete. A finding that doesn't survive verification is a report
+note, not an item.
 
 ## Branch and worktree naming
 
