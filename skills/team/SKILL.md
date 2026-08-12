@@ -80,11 +80,18 @@ dispatch guidance). Pass an engine preference through in the args if the owner
 specifies one; otherwise it is the Manager's discretion within the profile's
 configuration. Where no engine is declared, engines do not exist for the run.
 
-**Tool-grant spot-check:** each agent's frontmatter `tools:` should match its
-least-privilege scope — the Manager, Reviewers, and Merge-Clerk carry no
-`Write`/`Edit` beyond their sanctioned paths (Reviewers and the Merge-Clerk carry
-none at all; a Reviewer needing Write is a red flag). Spot-check this when you
-touch an agent file; a widened grant is a scope leak.
+**Tool-grant spot-check:** the agent file's **declared** `tools:` frontmatter is
+what this repo controls, so that is what you check — it should match the role's
+least-privilege scope, and the Manager, Reviewers, and Merge-Clerk declare no
+`Write`/`Edit` at all. Spot-check this when you touch an agent file; a widened
+*declaration* is a scope leak.
+
+> DELETE WHEN the runtime registers every agent with exactly its declared tools
+> — the loader may add grants beyond the declaration, so a running agent holding
+> more than its frontmatter declares is not by itself a finding. Containment for
+> the read-only roles is behavioural (the Boundaries sections of
+> `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md` and
+> `${CLAUDE_PLUGIN_ROOT}/agents/merge-clerk.md`), never tool-level.
 
 ## Auditing the spec on request — use the skill, don't improvise
 

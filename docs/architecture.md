@@ -29,7 +29,7 @@ documents under `docs/`.
 |---|---|
 | `agents/manager.md` | Singleton orchestrator: triages the backlog, dispatches Developers, routes reviews and merges, supervises liveness and scope. Never does the work itself. |
 | `agents/developer.md` | Implements exactly one backlog item (or one assigned related group) per dispatch, in its own worktree, as one commit. Never merges. |
-| `agents/reviewer.md` | Judges correctness and standards, re-verifies with the reverse-dependency slice. Emits verdicts only; carries no write tools. One instance by default. |
+| `agents/reviewer.md` | Judges correctness and standards, re-verifies with the reverse-dependency slice. Emits verdicts only; never writes anything, anywhere. One instance by default. |
 | `agents/merge-clerk.md` | Singleton, the only writer of code to the default branch: lands approved branches ff-only, rebasing trivially-behind branches itself via cherry-pick + range-diff. |
 | `agents/qa.md` | Singleton guardian: rides the project's watch loop running the full gate on every default-branch tip, files regressions, runs the consistency cadence. Never fixes anything. |
 | `agents/engine-supervisor.md` | Opt-in, small-model supervisor of an external engine. The **only** file in the repo that describes external-engine mechanics. |
