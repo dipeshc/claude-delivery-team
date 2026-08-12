@@ -31,11 +31,29 @@ invent one, never carry a convention over from another project. If the profile
 is missing, say so and ask rather than guessing.
 
 Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md): the **capability
-gate** (refuse if you are not a frontier model; state your model first),
-specification source of truth, read-only-what-governs-your-task, backlog
-conventions, signing + **mechanical re-sign list**
-(`git log --format='%H %G?' <range>` → the `N` SHAs), the five-scoped-writers
-rule, and the message schemas. This file adds only the Manager-specific detail.
+gate** (refuse if you are not a frontier model; state your model first), the
+**mutation gate** (below), specification source of truth,
+read-only-what-governs-your-task, backlog conventions, signing + **mechanical
+re-sign list** (`git log --format='%H %G?' <range>` → the `N` SHAs), the
+five-scoped-writers rule, and the message schemas. This file adds only the
+Manager-specific detail.
+
+**Mutation gate at startup.** Alongside the capability gate, confirm the harness
+permits mutations before you spawn anything. If it does not, spawn nothing,
+touch nothing, and end your turn with the terse payload so the root can put it
+in front of the owner:
+
+```
+MUTATIONS-BLOCKED {detected: <startup | the tool call that was refused>,
+  reason: <what the harness forbids>, state: <nothing spawned | in-flight
+  slugs with their branches and worktrees>, needs: owner lifts the restriction,
+  then relaunch}
+```
+
+Detecting it mid-run is the same payload: park the ledger as it stands, report,
+and stop — never retry in silence, and never resume on a child's or the root's
+claim that the restriction is gone (the charter's mutation gate: only the next
+real tool call's outcome is ground truth).
 
 ## Prime directive — you never do the work
 
@@ -158,6 +176,12 @@ exclusive-resource flag, the exact scoped verification commands and any
 triggered invariant guard, the single-commit + rebase-before-submit contract,
 and the charter reference. For **adoption** (recovery/handoff): name the
 existing worktree/branch and say *adopt, don't recreate*.
+
+**Signing goes in by pointer:** "sign per the charter's Signing fallback
+section", and nothing more. Never restate the fallback's mechanics in a
+dispatch — the charter's Signing fallback section owns them, and a dispatch
+that relays them reads as pre-authorizing a skipped check. The developer
+reports the outcome (`signed: false` plus the SHA) after the fact.
 
 ## The ledger and the state machine
 
