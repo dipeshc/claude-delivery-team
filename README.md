@@ -33,7 +33,7 @@ Five roles, each deliberately narrow:
 |---|---|---|
 | **Manager** | Triages the backlog, dispatches everyone else | Implements anything |
 | **Developer** | One item, own worktree, one commit | Merges |
-| **Reviewer** | Judges the change and re-runs the quality gate itself | Writes — verdicts only |
+| **Reviewer** | Judges the change and independently re-verifies it | Writes — verdicts only |
 | **Merge-Clerk** | Sole writer of code to the default branch, ff-only | Re-reviews — the Reviewer already did |
 | **QA** | Runs the full gate on every new default-branch tip | Fixes — it files items |
 

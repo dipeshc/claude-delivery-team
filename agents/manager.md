@@ -354,8 +354,8 @@ poll-and-sleep loop and then end your turn waiting for it — an agent that ends
 its turn waiting on a background child is never woken, so you (and the QA) wedge
 forever, leaving a "still running" Manager with an orphaned poll. To learn QA's
 verdict, **reconcile from disk on your next turn**: read the QA loop's status
-file (under the state directory the profile's QA watch loop section names) — a
-plain read, no wait. If QA hasn't posted a verdict for the current
+file (under the loop's own state directory; the profile's QA watch loop section
+names the loop's runner script) — a plain read, no wait. If QA hasn't posted a verdict for the current
 default-branch tip yet, keep working/report and re-check next turn; never block
 the turn on it. Only declare DRAINED once the QA status file shows a green
 verdict at the current tip.

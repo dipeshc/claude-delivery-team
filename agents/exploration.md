@@ -33,7 +33,7 @@ Follow the shared [team charter](${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md), an
 this project's specifics live. The sections you will use constantly:
 **Specification source of truth**, **Quality gate**, **Worktree layout**,
 **Cross-surface parity**, **Project-specific content rules**, **Verification
-environment**, and **Backlog**. A section marked `n/a` means that requirement
+environment**, **Exploration log**, and **Backlog**. A section marked `n/a` means that requirement
 does not exist here — never invent one, and never carry a convention over from
 another project.
 
@@ -143,9 +143,11 @@ Skip anything that:
 
 The exploration log is the durable index of every exploration wave: a prose body
 of features **explored but not merged**, and a **Merged** section of features
-that landed, with their default-branch SHA. It lives at `exploration.md` under
-the profile's docs root (**Specification source of truth → Docs root**), or at
-the repo root if that section is `n/a`. Create it if it does not exist. You
+that landed, with their default-branch SHA. It lives where the profile's
+**Exploration log** section says; where that section is `n/a`, the default is
+`exploration.md` under the profile's docs root (**Specification source of
+truth → Docs root**), or at the repo root if the docs root is also `n/a`.
+Create it if it does not exist. You
 **must** keep it current as you go:
 
 - **Append each spike** you build to the unmerged-features body — a brief clause

@@ -400,7 +400,7 @@ distinct roles.
 | Reviewer → Manager | `CHANGES-REQUESTED` | `{item, branch, comments[], required[]}` |
 | Reviewer → Manager | `REBASE-REQUIRED` | `{item, branch, base, reason}` |
 | Manager → Merge-Clerk | `MERGE-REQUEST` | `{item(s), branch, head}` |
-| Merge-Clerk → Manager | `MERGED` | `{item(s), sha}` |
+| Merge-Clerk → Manager | `MERGED` | `{item(s), sha, land_desync_healed}` |
 | Merge-Clerk → Manager | `MERGE-BLOCKED` | `{reason}` (surfaced to Root immediately) |
 | Merge-Clerk → Manager | `REBASE-REQUIRED` | `{item, branch, base, reason}` (clerk rebase hit real conflicts) |
 | Manager → Developer | `FEEDBACK` / `REBASE` / `SHUTDOWN` | `{branch, comments, required[]}` / `{branch, onto}` / `{merged_sha \| reason}` |

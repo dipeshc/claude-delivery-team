@@ -1,6 +1,6 @@
 # Exploration and spike promotion (root-owned, outside the pipeline)
 
-Moved out of `SKILL.md` so the team skill stays focused on running the pipeline.
+Kept separate from `SKILL.md` so the team skill stays focused on running the pipeline.
 Exploration is a **root-spawned specialist, not a team member** — speculative
 spikes must not pay the pipeline's ceremony on the way out.
 

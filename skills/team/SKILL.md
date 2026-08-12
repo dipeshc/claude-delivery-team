@@ -140,9 +140,8 @@ next audit better than this one.
 ## Direct lane — skip the team for low-risk work
 
 Before filing anything, decide **which lane the item belongs in** (charter,
-"Route work by risk, not by habit"; global AGENTS.md, "Size verification effort
-to actual risk"). This decision happens once, at intake — it is not something
-the Manager re-litigates per item.
+"Route work by risk, not by habit"). This decision happens once, at intake — it
+is not something the Manager re-litigates per item.
 
 **Team lane** (worktree, Developer, independent review, Merge-Clerk — the rest
 of this skill): auth/security/crypto, data-model or persistence changes,
