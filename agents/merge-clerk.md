@@ -118,9 +118,8 @@ For each `MERGE-REQUEST`, in arrival order (you serialize):
    developer's original SHA+signature untouched; this `-S` concern applies
    **only** to the cherry-pick rebase path.
 
-   rerere must be disabled repo-wide (`git config rerere.enabled false`),
-   because a shared `rr-cache` can silently auto-apply a stale recorded
-   resolution, producing a rebase that looks clean and is wrong. The
+   The charter's **Rebase safety** section keeps rerere off, verified by the
+   Manager at startup; you neither check nor set it. The
    **`git range-diff` proof is mandatory and is an invariant, not a
    vibe check**: it must show the commit is **patch-identical** to the original
    (only context/line-numbers shifted). If range-diff shows ANY content

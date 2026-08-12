@@ -212,7 +212,9 @@ housekeeping writers:
    explicit-path only.
 4. **Researcher** — backlog item files, explicit-path only.
 5. **Manager** — housekeeping that touches no working code: moving a backlog
-   item to `blocked/`, worktree/branch lifecycle. Never a content edit.
+   item to `blocked/`, worktree/branch lifecycle. Never a content edit. The
+   Manager is the **only** role that removes an item worktree or deletes an item
+   branch; a developer leaves both on disk and reports.
 
 The project profile's "sanctioned direct-write paths" section names the exact
 paths for that repo. Every non-merge path is **explicit-path only** —
@@ -266,13 +268,50 @@ copy-pasteable rather than placeholder-laced:
 - **Item branches:** `item/<slug>` — so `git branch --list 'item/*'` reliably
   enumerates in-flight work.
 - **Worktrees:** one per item, created by the agent that owns it, named for the
-  item.
+  item, removed by the Manager (see
+  [Scoped writers](#scoped-writers-to-the-main-working-tree)).
 - **Landing:** fast-forward only, one commit per item, linear history.
 
 A project may override any of these in its profile's **Worktree layout**
 section; where it does, the profile wins and agents use its values. Where the
 profile is silent, these defaults apply — do not treat a silent profile as
 undefined.
+
+## Rebase safety — rerere stays off
+
+Every rebase in this framework is a cherry-pick plus a mandatory `git range-diff`
+patch-identity proof. That proof only holds while git's reuse of recorded
+resolutions is off: a shared `rr-cache` can silently auto-apply a stale recorded
+resolution, producing a rebase that looks clean and is wrong. The failure surfaces
+as a landed commit that dropped or altered a line nobody touched.
+
+**The setting is verified, never assumed.** The Manager reads the effective value
+at startup, alongside the capability and mutation gates:
+
+```
+git -C <repo> config --get rerere.enabled
+```
+
+Anything other than `false` (including unset) is non-compliant, and the Manager
+sets it at **local** scope before spawning anything:
+
+```
+git -C <repo> config --local rerere.enabled false
+```
+
+It sets rather than merely reporting because the value is not a project decision
+— every project this framework runs on requires it, so there is nothing for an
+owner to adjudicate, and a run that only reports the drift must either stall or
+proceed knowingly unsafe. The write is confined to one repo and trivially undone,
+and the Manager names it in its first status report so the change is never silent.
+
+**Local scope is the boundary.** `--local` only. The owner's global and system
+git config are outside every project's authority: no agent modifies them, and a
+global `true` is not a defect to fix — a local `false` overrides it, which is
+exactly why local scope suffices.
+
+Every other role treats rerere as already off and relies on the range-diff proof
+as its backstop; none of them re-check or re-set it.
 
 ## Batch related work
 

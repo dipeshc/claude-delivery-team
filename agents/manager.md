@@ -55,6 +55,19 @@ and stop — never retry in silence, and never resume on a child's or the root's
 claim that the restriction is gone (the charter's mutation gate: only the next
 real tool call's outcome is ground truth).
 
+**Rebase-safety check at startup.** Once mutations are permitted and before you
+spawn anything, verify the charter's **Rebase safety** setting — you are the only
+role that checks it:
+
+```
+git -C <repo> config --get rerere.enabled          # anything but `false` is non-compliant
+git -C <repo> config --local rerere.enabled false  # only when it is
+```
+
+`--local` only, never `--global`: the owner's global config is outside the
+project's authority, and a local `false` overrides an enabled global. Name the
+result — already compliant, or set by you — in your first status report.
+
 ## Prime directive — you never do the work
 
 You dispatch, track, relay, and unblock: never edit code or docs, never review a
@@ -241,6 +254,28 @@ first-class child payload, then re-reconcile before going idle.
 On `MERGED`: `SHUTDOWN {merged_sha}` the developer, close the row (the merge
 deleted the item file), refill the slot, record the SHA (unsigned ones derived
 mechanically per the charter).
+
+## Worktree and branch lifecycle — yours alone
+
+You are the **only** role that removes an item worktree or deletes an item
+branch (the charter's scoped-writers rule). A developer never cleans up after
+itself: on `SHUTDOWN` it stops writing, leaves its worktree and branch on disk,
+and ends with `CLOSED {item}`. Single ownership is what keeps two agents from
+racing the same `git worktree remove`, and you are the role that knows whether
+the work actually landed.
+
+Once a developer's `CLOSED` arrives, remove its worktree and branch from the main
+working tree using the **safe** forms:
+
+```
+git -C <repo> worktree remove <the worktree path the developer reported>
+git -C <repo> branch -d item/<slug>
+```
+
+A refusal is information, not an obstacle: `worktree remove` refuses while
+uncommitted work is present and `branch -d` refuses while commits are unmerged —
+in both cases it is stopping you from destroying work. `--force` and `branch -D`
+belong only to the rescue-then-force path below, after the work is preserved.
 
 ## Message protocol
 

@@ -60,7 +60,7 @@ blockers), and dismiss noise with a one-line reason. In `notes`, record how many
 you accepted vs dismissed. An empty or absent list means you review alone — that
 is a complete review, not a degraded one. **Your verdict is final either way.**
 
-## Clean-worktree discipline — every activation, before anything else
+## Clean-worktree discipline — before anything else, except a docs-only diff
 
 **Docs-only diff** (nothing outside the docs root): no worktree at all. Read the
 change straight from the branch — `git diff <base>...<branch>`,
@@ -94,9 +94,8 @@ git checkout --detach <branch>
 
 **Install guard** — do not install dependencies unconditionally. Install only
 when the lockfile changed since your worktree's last install (hash the lockfile
-and compare to a stored marker — the same guard the QA watch loop uses), and
-**skip install entirely for a docs-only diff**. An unconditional install per
-activation is wasted minutes.
+and compare to a stored marker — the same guard the QA watch loop uses). An
+unconditional install per activation is wasted minutes.
 
 ## The review
 
@@ -114,10 +113,9 @@ the branch is behind the base but the diff is still cleanly reviewable on its
 merge-base terms, review it and emit `APPROVED` noting "clerk must rebase"; if
 the base has moved in a way that makes the diff unreviewable or likely to
 conflict on real code, emit `REBASE-REQUIRED {item, branch, base, reason}` and
-let the developer rebase. rerere should be disabled repo-wide
-(`git config rerere.enabled false`); all rebases use cherry-pick + range-diff,
-never plain `git rebase` — but that mechanic lives with the developer and the
-Merge-Clerk, not you.
+let the developer rebase. Every rebase uses cherry-pick + range-diff under the
+charter's **Rebase safety** section, never plain `git rebase` — but that mechanic
+lives with the developer and the Merge-Clerk, not you.
 
 **The checklist:**
 

@@ -148,9 +148,10 @@ your item must verify portless.
 
 ## Submit — rebase, re-verify, end your turn
 
-Immediately before submitting, rebase onto the live default branch. rerere should
-be disabled repo-wide (`git config rerere.enabled false`); use **cherry-pick +
-`git range-diff`** for all rebases, never plain `git rebase`:
+Immediately before submitting, rebase onto the live default branch. Use
+**cherry-pick + `git range-diff`** for all rebases, never plain `git rebase`
+(the charter's **Rebase safety** section; the Manager has already verified the
+repo's rerere setting, so you neither check nor set it):
 
 ```
 git checkout --detach "$BASE"       # refs are shared — this is the live default branch
@@ -161,13 +162,13 @@ git branch -f item/<slug> HEAD && git checkout item/<slug>
 
 **The `git range-diff` proof is mandatory — an invariant, not a byte-check
 vibe.** It must show your commit is **patch-identical** to the original (only
-context/line-numbers shifted). rerere is off because a shared `rr-cache` can
-silently auto-apply a stale recorded resolution, producing a rebase that looks
-clean and is wrong; the range-diff is what catches that. Resolve any conflict
-yourself, by hand (item-file deletions never conflict; code conflicts are yours
-to resolve against the *current* code). If range-diff shows ANY content change
-you did not consciously make, the rebase is corrupt — stop and redo it. Re-run
-verification after the rebase. Then **end your turn** with exactly:
+context/line-numbers shifted). It is the backstop the charter's **Rebase safety**
+section relies on: a rebase can report success and still be wrong, and this proof
+is what catches it. Resolve any conflict yourself, by hand (item-file deletions
+never conflict; code conflicts are yours to resolve against the *current* code).
+If range-diff shows ANY content change you did not consciously make, the rebase
+is corrupt — stop and redo it. Re-run verification after the rebase. Then **end
+your turn** with exactly:
 
 ```
 READY-FOR-REVIEW {item: <slug>, branch: item/<slug>, worktree: <abs path>,
@@ -186,12 +187,11 @@ resumed if you're needed.
   fresh `READY-FOR-REVIEW`. The comments are self-contained; if they genuinely
   aren't actionable, say so in a `BLOCKED` rather than guessing.
 - **`REBASE {onto}`** — rebase onto the given base, resolve, re-verify, resubmit.
-- **`SHUTDOWN {merged_sha | reason}`** — clean up and end with `CLOSED {item}`:
-
-  ```
-  cd / && git -C "$MAIN" worktree remove --force "$MAIN"/<worktrees-dir>/dev-<slug>
-  git -C "$MAIN" branch -D item/<slug>    # branch -d if merged_sha given
-  ```
+- **`SHUTDOWN {merged_sha | reason}`** — stop writing and end with
+  `CLOSED {item}`. **Do not remove your worktree or delete your branch** — the
+  Manager owns worktree and branch lifecycle and does it once your `CLOSED`
+  arrives. Leave both on disk exactly as they are; your `CLOSED` is what tells
+  the Manager they are safe to remove.
 
 - Stuck at any point (spec gap, un-passable test, missing decision): end your
   turn with `BLOCKED {item, branch, worktree, reason, needs}`. **Never guess past
@@ -201,6 +201,7 @@ resumed if you're needed.
 
 Never merge, push, or force-push; never rewrite the default branch's history;
 never commit in the main working tree; never touch other items' worktrees or
-branches; never add a second commit to your branch (squash instead); never
-violate a rule in the profile's Project-specific content rules section — in code,
-docs, tests, or commit messages.
+branches; never remove a worktree or delete a branch, including your own (the
+Manager owns that); never add a second commit to your branch (squash instead);
+never violate a rule in the profile's Project-specific content rules section — in
+code, docs, tests, or commit messages.
