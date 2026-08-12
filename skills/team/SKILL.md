@@ -59,14 +59,21 @@ not dead.
 So make the relaunch safe by default. In the same turn you relaunch, SendMessage
 the presumed-dead Manager a stand-down — it was presumed dead, a replacement is
 running, so it dispatches nothing and reports its state instead of resuming the
-pipeline. If it really is dead the message is inert; if it wakes, it reads the
-stand-down before it can act. A heartbeat-driven relaunch does the same:
+pipeline. If it really is dead the message is inert; if it wakes, the
+stand-down makes the relaunch safe **only when it is read before the
+resurrected Manager acts** — message delivery ordering is not guaranteed, so a
+message already queued against it can fire on wake and be acted on first,
+ahead of the stand-down. Send it anyway: it is cheap and closes the gap
+whenever it does win that race. A heartbeat-driven relaunch does the same:
 liveness check first, stand-down in the same turn.
 
-If two are running anyway, stop the one with **less context** — normally the one
-you just launched, since the resurrected instance still holds the run's ledger —
-by sending it a stand-down and stopping its task (`TaskStop`), and confirm the
-survivor knows it is now the only one. Then check whether the overlap already
+The ordering-independent backstop is `TaskStop`: stopping the resurrected
+Manager's task needs no cooperation from it, so it closes the window regardless
+of what either Manager has read. If two are running anyway, stop the one with
+**less context** — normally the one you just launched, since the resurrected
+instance still holds the run's ledger — by sending it a stand-down and stopping
+its task (`TaskStop`), and confirm the survivor knows it is now the only one.
+Then check whether the overlap already
 landed something twice: `git -c log.showSignature=false log --oneline -10
 <default-branch>` for one item merged twice, a stray `CHERRY_PICK_HEAD` in the
 main working tree or a clerk worktree, and `git branch --list 'item/*'` for two
