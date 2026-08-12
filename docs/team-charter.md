@@ -11,7 +11,7 @@ the more specific agent file wins for that role, but the invariants below
 **This charter is generic and identical for every project.** Everything
 project-specific — quality-gate commands, backlog location, invariant guards,
 parity requirements, content rules — lives in that project's
-`.claude/project-profile.md`. See [Project profile](#project-profile).
+`.claude/project-profile.md`. See [Project profile](#project-profile--read-it-first).
 
 ## Project profile — read it first
 

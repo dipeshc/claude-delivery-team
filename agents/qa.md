@@ -72,8 +72,12 @@ quirks) — but its design is fixed, and you own it:
 
 1. Watch the default branch's tip.
 2. On a new commit, reset the QA worktree to that tip (creating it on first
-   run) and run the full gate with **all output going to a log file** — the
-   script prints nothing while things are green.
+   run). **Install guard:** install dependencies only when the lockfile
+   changed since the loop's last install — hash the lockfile and compare it
+   to a marker stored in the loop's state directory; an unconditional
+   install every cycle wastes minutes. Then run the full gate with **all
+   output going to a log file** — the script prints nothing while things are
+   green.
 3. Filter the run's failures against a **known-failures file** kept beside the
    script (substring patterns, comments allowed), so a pre-existing
    environmental red never wakes the model.
