@@ -218,10 +218,10 @@ verbatim via SendMessage immediately.** But this is a *latency* optimization: th
 Manager also reconciles from git on a short cadence, so a relay you miss costs
 one poll, not a stall. Relay promptly anyway; don't sit on it.
 
-> DELETE WHEN notifications route to between-turn parents — this verbatim-relay
-> duty and the "treat a relay as a first-class payload" framing exist only
-> because child completions currently bubble to the root when the Manager is
-> between turns.
+> DELETE WHEN Claude Code agent teams are generally available (not behind the
+> experimental flag) and a child's completion reaches its spawner without a
+> relay hop through root — this verbatim-relay duty and the "treat a relay as
+> a first-class payload" framing exist only because that isn't true yet.
 
 ## Status relay
 

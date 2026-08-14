@@ -250,8 +250,10 @@ reveal. **Caveat:** a child finishing while you are between turns bubbles its
 notification to the **root**, which relays it — treat a root relay as a
 first-class child payload, then re-reconcile before going idle.
 
-> DELETE WHEN notifications route to between-turn parents — the root-relay
-> dependency and this caveat exist only because they currently don't.
+> DELETE WHEN Claude Code agent teams are generally available (not behind the
+> experimental flag) and a child's completion reaches its spawner without a
+> relay hop through root — the root-relay dependency and this caveat exist
+> only because that isn't true yet.
 
 On `MERGED`: `SHUTDOWN {merged_sha}` the developer, close the row (the merge
 deleted the item file), refill the slot, record the SHA.
