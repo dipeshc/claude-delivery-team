@@ -30,7 +30,7 @@ Its spec is the documents under `docs/`.
 | `agents/manager.md` | Singleton orchestrator: triages the backlog, dispatches Developers, routes reviews and merges, supervises liveness and scope. Never does the work itself. |
 | `agents/developer.md` | Implements exactly one backlog item (or one assigned related group) per dispatch, in its own worktree, as one commit. Never merges. |
 | `agents/reviewer.md` | Judges correctness and standards, re-verifies with the reverse-dependency slice. Emits verdicts only; never writes anything, anywhere. One instance by default. |
-| `agents/merge-clerk.md` | Singleton, the only writer of code to the default branch: lands approved branches ff-only, rebasing trivially-behind branches itself via cherry-pick + range-diff. |
+| `agents/merge-clerk.md` | Singleton, the only writer of team-lane code to the default branch: lands approved branches ff-only, rebasing trivially-behind branches itself via cherry-pick + range-diff. |
 | `agents/qa.md` | Singleton guardian: rides the project's watch loop running the full gate on every default-branch tip, files regressions, runs the consistency cadence. Never fixes anything. |
 | `agents/engine-supervisor.md` | Opt-in, small-model supervisor of an external engine. The **only** file in the repo that describes external-engine mechanics. |
 | `agents/exploration.md` | Root-owned specialist for feature-spike waves, outside the pipeline. |
@@ -48,10 +48,14 @@ These bind every component; a component contradicting one is defective.
    are the source of truth: a doc-vs-code mismatch is a code bug, spec edits
    ship in the same commit as the behaviour they describe, and agents sharpen
    docs but never re-decide them (decisions are the owner's).
-2. **Single writer for code.** Only the Merge-Clerk writes code to a project's
-   main working tree, via `merge --ff-only`, one commit per item, linear
-   history. A short list of scoped housekeeping writers (charter,
-   "Scoped writers") is the only exception, and none of them edit code.
+2. **One writer for code, per lane.** Code reaches a project's main working
+   tree only by `merge --ff-only`, one commit per item, linear history — and
+   only one agent per lane performs that merge: the Merge-Clerk for team-lane
+   work, and for a direct-lane change (invariant 3) the single agent that did
+   the work, under the proof obligations the charter's "Scoped writers" entry
+   states. Beside those two sits a short list of scoped housekeeping writers
+   (charter, "Scoped writers"); none of them edit code, and no other role
+   writes to the main working tree at all.
 3. **Risk-routed lanes.** Small, single-area changes take the direct lane; the
    full pipeline is reserved for work whose risk earns it. Verification effort
    scales with risk, not habit.

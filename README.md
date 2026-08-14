@@ -34,7 +34,7 @@ Five roles, each deliberately narrow:
 | **Manager** | Triages the backlog, dispatches everyone else | Implements anything |
 | **Developer** | One item, own worktree, one commit | Merges |
 | **Reviewer** | Judges the change and independently re-verifies it | Writes — verdicts only |
-| **Merge-Clerk** | Sole writer of code to the default branch, ff-only | Re-reviews — the Reviewer already did |
+| **Merge-Clerk** | Sole writer of team-lane code to the default branch, ff-only | Re-reviews — the Reviewer already did |
 | **QA** | Runs the full gate on every new default-branch tip | Fixes — it files items |
 
 Not every change pays for that pipeline: at intake, small single-area work is
@@ -52,10 +52,12 @@ flowchart LR
     QA[QA] -->|full gate on every tip| MAIN
 ```
 
-Because only the Merge-Clerk lands code, history stays linear and every commit
-traces to a reviewed item. And because state is branches, worktrees, and
-backlog files, any agent that dies is simply relaunched and reconstructs its
-world from git.
+Team-lane code lands only via the Merge-Clerk; a direct-lane change is landed
+the same way — fast-forward only — by the single agent that did the work, once
+it has passed the scoped gate and a self-review. Either way history stays
+linear and every commit traces to one verified change. And because state is
+branches, worktrees, and backlog files, any agent that dies is simply
+relaunched and reconstructs its world from git.
 
 Opt-in extras — an `engine-supervisor` that routes implementation through an
 external coding CLI (fully contained: a run without one configured never sees

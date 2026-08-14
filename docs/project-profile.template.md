@@ -107,11 +107,17 @@ If a user-facing change must land on several clients/platforms to be complete:
 
 ## Sanctioned direct-write paths
 
-Paths the root/orchestrating instance may commit to directly, outside the
-normal review pipeline (everything else lands via the pipeline).
+Paths the root/orchestrating instance may commit to directly on the main
+working tree — housekeeping writes that never go near a branch or a gate.
 
 - e.g. `docs/backlog/`, `scripts/qa/`, `.claude/`
-- `n/a` if every change goes through the pipeline.
+- `n/a` if nothing is written straight to the main tree here.
+
+This list does **not** enumerate direct-lane code paths: a direct-lane change
+is not a direct commit — it is implemented on a short-lived branch and
+fast-forward-merged after its proof, and the charter's "Scoped writers to the
+main working tree" sanctions that path wherever the lane's own preconditions
+hold. So `n/a` here means "no housekeeping writes", never "no direct lane".
 
 ## Worktree layout
 

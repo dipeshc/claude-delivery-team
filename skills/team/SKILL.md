@@ -16,8 +16,8 @@ The Manager owns the whole delivery loop: Developers implement in per-item
 worktrees, a **Reviewer** (one by default; the project profile may scale to
 more if its throughput genuinely needs it) judges correctness and emits
 `APPROVED`, the singleton **Merge-Clerk** lands approved work ff-only (the only
-writer of code to the main working tree), the **QA** guards the default
-branch.
+writer of the code the team lane produces; the direct lane below lands its
+own), the **QA** guards the default branch.
 
 ## Read these two files first
 
@@ -181,22 +181,27 @@ external services, comparing design options)
   (priority in the filename), and commit it explicit-path
   (`docs(backlog): …` or the project's equivalent scope).
 - **Yes** → dispatch a **research spike**: spawn a `general-purpose` agent
-  (background, frontier model) with the question and this brief — *investigate
-  for real (read the code, reproduce, probe the service, measure — never reason
-  from vibes); adversarially check your own conclusion before filing (what would
+  (background, frontier model) with the question, the charter path
+  `${CLAUDE_PLUGIN_ROOT}/docs/team-charter.md`, and this brief — *read that
+  charter before you file anything: it binds you as its root-dispatched
+  Researcher. State your model as your first action and **STOP** if you are a
+  small model or cannot confidently identify yourself. Investigate for real
+  (read the code, reproduce, probe the service, measure — never reason from
+  vibes); adversarially check your own conclusion before filing (what would
   prove it wrong? mark verified vs inferred); answer only the question asked
   (adjacent findings are report notes, not extra items); file one item file into
-  the profile's backlog location per its conventions (frontmatter `by: research`)
-  with a one-sentence what's-wanted, exact acceptance criteria, and `file:line`
-  evidence — or file into the backlog's `blocked/` subdirectory with a one-line
-  recommendation when a spec decision is needed; end with
-  `FILED {items[], commit, confidence, open_questions}` or
+  the profile's backlog location per its conventions (frontmatter
+  `by: research`), in the charter's full item shape — every field of its
+  handoff contract, evidence as `file:line` — and commit it explicit-path:
+  `git add <path>`, never `git add -A`. Or file into the backlog's `blocked/`
+  subdirectory with a one-line recommendation when a spec decision is needed;
+  end with `FILED {items[], commit, confidence, open_questions}` or
   `NO-ITEM {finding, why}`* — then relay its result to the user.
 
 Either way a running Manager picks the item up within a poll cycle — no relaunch.
 A new-item backlog commit is Root's sanctioned write to the main working tree
-(profile, "Sanctioned direct-write paths"); everything else lands via the
-Merge-Clerk.
+(profile, "Sanctioned direct-write paths"); everything else on this lane lands
+via the Merge-Clerk.
 
 Remember the charter's item lifecycle: **an item is done when the merging commit
 deletes its item file** — a file that outlives its merged work gets

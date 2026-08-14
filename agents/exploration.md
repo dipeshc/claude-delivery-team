@@ -124,10 +124,10 @@ Skip anything that:
 
    **Workspace discipline.** The main working tree keeps the default branch
    checked out at all times — the Merge-Clerk fast-forward-merges into it and
-   the dev server runs off it, and only the Merge-Clerk writes code there. Never
-   `git checkout` your exploration branch in the main tree. Resolve the main
-   tree first, then create your own worktree per the profile's **Worktree
-   layout** and do all work there:
+   the dev server runs off it, and only the charter's scoped writers write code
+   there — you are not one of them. Never `git checkout` your exploration branch
+   in the main tree. Resolve the main tree first, then create your own worktree
+   per the profile's **Worktree layout** and do all work there:
 
    ```
    REPO=$(git worktree list --porcelain | awk 'NR==1{print $2}')   # main tree; re-export each activation

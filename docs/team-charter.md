@@ -225,25 +225,39 @@ to a shared surface is incomplete, not landable. Projects with a single surface
 ## Scoped writers to the main working tree
 
 The main working tree is written by a small set of **scoped** paths. This is
-not "single writer" — it is single-writer-for-code plus a few scoped
+not "single writer" — it is one writer of *code* per lane, plus a few scoped
 housekeeping writers:
 
-1. **Merge-Clerk** — the only writer of *code*, via `merge --ff-only` of an
-   approved branch. The serialization point for history.
-2. **QA** — its own loop mechanics and filed backlog findings, explicit-path
+1. **Merge-Clerk** — the only writer of the *code* the team lane produces, via
+   `merge --ff-only` of an approved branch. The serialization point for
+   history.
+2. **Direct-lane lander** — Root, or the one subagent Root delegated the item
+   to, landing its own direct-lane change (see "Route work by risk, not by
+   habit") by `merge --ff-only` of a short-lived branch. One agent per item:
+   whoever did the work lands it, and no one else joins the lane. The merge is
+   earned by proof, all of it before landing — the profile's *scoped* gate for
+   the area touched, every repo-wide invariant guard the change triggers, and
+   one self-review pass. An item that fails any of the three, or that outgrows
+   the lane's preconditions (single-area, small diff, existing coverage, no
+   security/data-model/cross-cutting implications), escalates to the team lane
+   instead of landing. The QA's full-gate run on the new tip is this lane's
+   independent verification; it is not a licence to skip the three.
+3. **QA** — its own loop mechanics and filed backlog findings, explicit-path
    only.
-3. **Root** — backlog item files and the framework files under `.claude/`,
+4. **Root** — backlog item files and the framework files under `.claude/`,
    explicit-path only.
-4. **Researcher** — backlog item files, explicit-path only.
-5. **Manager** — housekeeping that touches no working code: moving a backlog
+5. **Researcher** — backlog item files, explicit-path only.
+6. **Manager** — housekeeping that touches no working code: moving a backlog
    item to `blocked/`, worktree/branch lifecycle. Never a content edit. The
    Manager is the **only** role that removes an item worktree or deletes an item
    branch; a developer leaves both on disk and reports.
 
 The project profile's "sanctioned direct-write paths" section names the exact
-paths for that repo. Every non-merge path is **explicit-path only** —
-`git add <path>`, never `git add -A`. Anyone else writing to the main tree is
-off the rails.
+paths for that repo: it scopes the housekeeping writes made straight to the
+main tree, not the two merge paths above, which this list already sanctions
+wherever the lane's own conditions are met. Every non-merge path is
+**explicit-path only** — `git add <path>`, never `git add -A`. Anyone else
+writing to the main tree is off the rails.
 
 ## Backlog conventions
 
