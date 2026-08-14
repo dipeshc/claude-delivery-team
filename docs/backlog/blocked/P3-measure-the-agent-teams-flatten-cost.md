@@ -51,3 +51,13 @@ shrinks. Both are avoidable for the cost of one throwaway experiment.
 building a parallel framework. Pairs with
 `P3-name-the-relay-sunset-trigger` — that item names the trigger, this one
 measures whether tripping it is affordable.
+
+---
+
+⛔ **Blocked on environment (2026-08-14).** Claude Code agent teams are still behind
+the experimental flag `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`, which is unset in
+this environment (verified: absent from the process environment and from
+settings). The flat-topology experiment cannot be run, and this item's own
+acceptance criteria direct that it move here with that reason rather than be
+approximated. Unblocks when teams are available to run a real delivery cycle
+under a flat topology.
