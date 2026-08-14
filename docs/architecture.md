@@ -8,10 +8,10 @@ file disagree, this document is right and the agent/skill file is a bug.
 ## What this repo is
 
 A [Claude Code plugin](https://code.claude.com/docs/en/plugins.md) implementing
-an autonomous, docs-driven software delivery team. The repo is prose-only:
-its "code" is the agent definitions under `agents/`, the skills under
-`skills/`, and the plugin manifest under `.claude-plugin/`. Its spec is the
-documents under `docs/`.
+an autonomous, docs-driven software delivery team. Its "code" is the agent
+definitions under `agents/`, the skills under `skills/`, one orchestration
+script under `workflows/`, and the plugin manifest under `.claude-plugin/`.
+Its spec is the documents under `docs/`.
 
 ## Document roles
 
@@ -37,7 +37,8 @@ documents under `docs/`.
 | `agents/ui-inspector.md` | Root-owned specialist for visual QA of a project's rendered UI. |
 | `skills/team/SKILL.md` | How the root instance runs a delivery: lane routing, spawning the Manager, status heartbeat, watchdog, recovery. |
 | `skills/team/exploration-and-promotion.md` | How exploration runs and how a kept spike is promoted through the pipeline. |
-| `skills/consistency-check/SKILL.md` | The two-phase spec audit: spec-vs-spec, then spec-vs-code. Files findings; fixes nothing. |
+| `skills/consistency-check/SKILL.md` | The two-phase spec audit: spec-vs-spec, then spec-vs-code. Owns the method — the applicability gate, the finding classes, how a contradiction is resolved on paper, and the filing rules. Files findings; fixes nothing. |
+| `workflows/consistency-sweep.js` | Runs that audit as a whole-spec sweep: a finding class per agent in parallel, each finding put to an independent skeptic that tries to refute it, survivors filed in one serialized step. Owns the fan-out only; the method stays in the skill. Invoked on demand as `/delivery-team:consistency-sweep`; QA's cadence keeps calling the skill directly, since a subagent cannot launch a workflow. |
 
 ## Invariants
 

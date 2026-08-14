@@ -18,6 +18,12 @@ not even a broken link. Every finding becomes a backlog item that a Developer
 lands through review, because under the team model every doc change goes
 through a Reviewer and the Merge-Clerk like any other change.
 
+This file owns the method. `/delivery-team:consistency-sweep` runs the same
+method as a whole-spec sweep — a class per agent in parallel, every finding put
+to a skeptic before it is filed — and is the better choice when the scope is
+everything rather than a range. Follow this skill for the audit itself either
+way.
+
 ## Before anything: applicability gate
 
 Read `<repo>/.claude/project-profile.md`, section **Specification source of
