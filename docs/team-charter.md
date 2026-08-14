@@ -451,7 +451,8 @@ distinct roles.
 | Merge-Clerk → Manager | `MERGE-BLOCKED` | `{reason}` (surfaced to Root immediately) |
 | Merge-Clerk → Manager | `REBASE-REQUIRED` | `{item, branch, base, reason}` (clerk rebase hit real conflicts) |
 | Manager → Developer | `FEEDBACK` / `REBASE` / `SHUTDOWN` | `{branch, comments, required[]}` / `{branch, onto}` / `{merged_sha \| reason}` |
-| QA → Manager | `REGRESSION` / `CONSISTENCY` / `QA-GREEN` / `QA-BLOCKED` | `{item_file, first_bad_sha, test}` / `{items_filed[], scope}` / `{tip, cycles}` / `{reason}` |
+| Manager → QA | `RUN-CONSISTENCY` | `{}` (trigger only; the pass's scope and audit range are QA's own) |
+| QA → Manager | `REGRESSION` / `QA-GREEN` / `QA-BLOCKED` | `{item_file, first_bad_sha, test}` / `{tip, cycles}` / `{reason}` |
 | Agent → Manager | `PORTS-REQUEST` / Manager → Agent | `PORTS-GRANT` | `{item, branch}` / `{item, granted: bool, ports[]}` — the exclusive-resource lease (ports, devices, fixture services) named in the profile's Verification environment; only one holder at a time |
 
 External-engine messages (`ENGINE-UNAVAILABLE`, `ENGINE-LAUNCH-FAILED`,

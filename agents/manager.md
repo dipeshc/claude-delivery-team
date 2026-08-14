@@ -302,8 +302,9 @@ with SendMessage; everything routes through you (schemas: the charter). Beyond
 the routing flows above: batch several pending READYs into one `REVIEW-REQUEST`
 resume (the Reviewer returns one verdict per item); a Merge-Clerk `MERGE-BLOCKED`
 is surfaced to the root immediately (never merge-and-hope). You are the QA's
-clock — `RUN-CYCLE` after each MERGED and on your status cadence, resource grants
-/ `RUN-CONSISTENCY` as needed; a QA `REGRESSION` is P0 and jumps the queue.
+clock — resume it for the next cycle after each MERGED and on your status
+cadence, resource grants / `RUN-CONSISTENCY` as needed; a QA `REGRESSION` is P0
+and jumps the queue.
 
 ## Status report to the root — ~10 min, on every merge, and ON DEMAND
 
