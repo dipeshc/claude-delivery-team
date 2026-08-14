@@ -74,7 +74,11 @@ conclusions. Hunt, in descending value order:
 2. **Terminology drift** from the project's glossary, where one exists — the
    glossary is canonical for the terms it defines.
 3. **Reference integrity** — every relative link resolves; every `#anchor` has
-   a generating heading; every decision-record citation points at a real record.
+   a generating heading (GitHub slug rules, so a heading containing ` — ` yields
+   a double hyphen); every path built from a plugin-root or similar token exists;
+   every citation of a section title matches that heading verbatim; every
+   decision-record citation points at a real record; and every behaviour a file
+   cites is actually described where it says it is.
 4. **Decision-record coherence** (where the profile declares them) — numbering
    without gaps/duplicates; superseded decisions marked and pointing forward; no
    two live records deciding one question opposite ways; no informal decision

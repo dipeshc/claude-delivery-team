@@ -67,14 +67,14 @@ const FILED = {
   },
 }
 
-// The audit classes are the skill's phase-1 list, one agent each so they run
-// concurrently. Phase 2 (spec vs code) is a class here too, gated on docsAreSpec.
+// One agent per finding class so the classes run concurrently. The classes are
+// named here; the skill defines each one, and phase 2 is gated on docsAreSpec.
 const CLASSES = [
-  { key: 'contradictions', ask: 'Cross-document contradictions: the same fact asserted two ways across documents — defaults, capability or permission matrices, message payloads and their fields, enum lists, command forms, role boundaries. Also intra-document self-contradiction.' },
-  { key: 'references', ask: 'Reference integrity: every relative link resolves, every #anchor has a generating heading (GitHub slug rules — a heading containing " — " yields a double hyphen), every ${CLAUDE_PLUGIN_ROOT} path exists, every citation of a section title matches a real heading verbatim, and every cited behaviour is actually described where it is cited.' },
-  { key: 'residue', ask: 'Residue of earlier versions per the charter section "Spec prose is timeless": historical narration or incident stories instead of present-tense rationale; sections, fields or files nothing consumes; the same rule legislated in two places where one should own it and the other point at it; metadata (manifests, frontmatter, descriptions) that no longer matches what it describes; DELETE WHEN tags whose trigger has fired.' },
-  { key: 'terminology', ask: 'Terminology drift from the project glossary where one exists. If the project declares no glossary, report no findings for this class rather than nominating canonical terms yourself.' },
-  { key: 'decisions', ask: 'Decision-record coherence where the profile declares decision records: numbering without gaps or duplicates, superseded records marked and pointing forward, no two live records deciding one question opposite ways. If the profile says n/a, report no findings for this class.' },
+  { key: 'contradictions', title: 'Cross-document contradictions, and intra-document self-contradiction' },
+  { key: 'references', title: 'Reference integrity' },
+  { key: 'residue', title: 'Residue of earlier versions' },
+  { key: 'terminology', title: 'Terminology drift' },
+  { key: 'decisions', title: 'Decision-record coherence' },
 ]
 
 phase('Map')
@@ -95,9 +95,7 @@ if (!map || !map.applicable) {
 log(`${map.files.length} files in scope; docs are spec: ${map.docsAreSpec}`)
 
 const classes = CLASSES.concat(
-  map.docsAreSpec
-    ? [{ key: 'spec-vs-code', ask: 'Phase 2, spec versus code: take each claim the specification makes about behaviour and verify it against the definition that implements it, with file:line evidence on both sides. The docs are the truth, so a confirmed delta is a defect in the implementing file. Behaviour with no governing spec is an adjudication candidate, not a silent pass. Confirmed deltas only — never report one you could not verify by reading the implementing file.' }]
-    : [],
+  map.docsAreSpec ? [{ key: 'spec-vs-code', title: 'Phase 2 — spec vs code (the whole section)' }] : [],
 )
 
 phase('Audit')
@@ -105,15 +103,14 @@ const verified = await pipeline(
   classes,
   cls =>
     agent(
-      `You are auditing one class of defect across a specification. Follow the method in ${map.skillPath} — read the actual text for every candidate, never conclude from a grep hit alone, and remember that a uniform long-standing pattern is far more likely to be the project's convention than a defect.
+      `You are auditing one class of defect across a specification. **Read ${map.skillPath} first — it defines the method, every finding class, and how to pick the canonical side — and follow it.** This prompt names your class and your scope; the skill says what the class means and how to judge it.
+
+Your class, and only this class: **${cls.title}**, as that skill defines it. Audit nothing outside it.
 
 Files in scope:
 ${map.files.join('\n')}
 
-Your class, and only this class:
-${cls.ask}
-
-For each finding give the claim in one sentence, quoted file:line evidence for every side, which side is canonical and why (glossary over usage, newer decision over older, explicitly-normative over passing mention, the owning section over an incidental restatement, an owner ruling over anything predating it), and whether it is mechanical rot. Report nothing you could not substantiate by reading. An empty findings list is a good answer when the class is clean.`,
+Return each finding as: the claim in one sentence, quoted file:line evidence for every side, which side is canonical and why (resolve that per the skill's rule, do not invent your own), and whether it is mechanical rot. Report nothing you could not substantiate by reading the files themselves. An empty findings list is a good answer when the class is clean.`,
       { label: `audit:${cls.key}`, phase: 'Audit', schema: FINDINGS },
     ),
   (result, cls) =>

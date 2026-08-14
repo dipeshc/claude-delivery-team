@@ -10,12 +10,13 @@ working on *this* repository.
 
 - **Root path:** `/Users/dipesh/code/claude-delivery-team`
 - **Default branch:** `main`
-- **Package manager / runtime:** n/a — prose-only repo (Markdown agent
-  definitions, skills, and docs; no build, no runtime).
+- **Package manager / runtime:** n/a — no build and no dependencies; the repo is
+  Markdown plus one workflow script the Claude Code runtime executes.
 - **Layout:**
   - `.claude-plugin/` — plugin manifest.
   - `agents/` — the team's agent definitions.
   - `skills/` — the `team` and `consistency-check` skills.
+  - `workflows/` — `consistency-sweep.js`, the parallel spec audit.
   - `docs/` — the spec: `architecture.md` (entry doc), `team-charter.md`,
     `project-profile.template.md`, and `backlog/`.
 
@@ -25,7 +26,8 @@ working on *this* repository.
   reading against `docs/architecture.md` and `docs/team-charter.md` IS the
   verification.
 - **Full:** n/a — the `consistency-check` skill (spec-vs-spec, then
-  spec-vs-code over the agent/skill definitions) is this repo's full audit.
+  spec-vs-code over the agent, skill and workflow definitions) is this repo's
+  full audit; `/delivery-team:consistency-sweep` runs it across everything.
 - **Not covered:** everything not readable — there is no automated gate, so
   nothing is compiled, run, or booted; reading against the spec is the entire
   verification.
@@ -43,8 +45,9 @@ working on *this* repository.
 ## Specification source of truth
 
 - **Docs are spec?** Yes. `docs/architecture.md` and `docs/team-charter.md`
-  specify the framework; the agent files under `agents/` and the skills under
-  `skills/` implement them. A mismatch means the agent/skill file is wrong —
+  specify the framework; the agent files under `agents/`, the skills under
+  `skills/` and the workflow under `workflows/` implement them. A mismatch means
+  the implementing file is wrong —
   unless the change is a deliberate re-decision, which is an owner call and
   updates the spec first. `docs/project-profile.template.md` is a shipped
   artifact whose example values describe consuming projects, not this repo.

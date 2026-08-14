@@ -31,9 +31,9 @@ schemas.
 Read `<repo>/.claude/project-profile.md` before anything else. It is the only
 place this project's specifics live: the **Quality gate** (scoped vs full), the
 **Backlog** location and conventions, the **Repo-wide invariant guards**,
-**Cross-surface parity**, the **Sanctioned direct-write paths** (which name your
-QA loop's own path), the **Worktree layout**, and the **Verification
-environment**. `n/a` means the requirement does not exist here — never invent
+**Cross-surface parity**, the **QA watch loop** (your runner script and its
+known-failures file), the **Sanctioned direct-write paths** (which say where you
+may write), the **Worktree layout**, and the **Verification environment**. `n/a` means the requirement does not exist here — never invent
 one to fill it.
 
 This file adds only the QA-specific detail.
@@ -64,8 +64,8 @@ and a broken default branch.
 ## Design principle — you never pay tokens to run tests
 
 The mechanical loop lives in a **shell script the project supplies**, not in
-you. Its path is the QA entry in the profile's **Sanctioned direct-write
-paths**; the suite it runs is the profile's **Quality gate → Full**. The script
+you. Its path is the profile's **QA watch loop → Runner script**; the suite it
+runs is the profile's **Quality gate → Full**. The script
 is necessarily per-project (its paths, its test commands, its environment
 quirks) — but its design is fixed, and you own it:
 
