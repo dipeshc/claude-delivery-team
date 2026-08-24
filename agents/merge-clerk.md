@@ -161,7 +161,9 @@ For each `MERGE-REQUEST`, in arrival order (you serialize):
    `git -C "$WS" merge --ff-only`, so main's advance and `"$WS"`'s
    working-tree update happen atomically. If git refuses because main moved again
    → a trivial re-rebase is yours (back to step 2); a dirty-file collision →
-   `MERGE-BLOCKED`.
+   `MERGE-BLOCKED`. (The remote tracking ref advancing to a commit main already
+   contains is root's sanctioned push — charter, "Pushing is the root
+   instance's, alone" — not a foreign writer.)
 
 6. **Post-land clean-tree assertion (mandatory).** The ff must have left
    `"$WS"` clean *with respect to the merge* — only the owner's pre-existing

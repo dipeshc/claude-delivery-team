@@ -346,7 +346,10 @@ and jumps the queue.
 (`git log --no-show-signature --oneline -5 <default-branch>`, `git worktree list`,
 `git branch --list 'item/*'`) — that reconcile also refreshes the progress board
 (`state.js`, per "Mirror the ledger to the progress board") — then push the
-report, then resume (a STATUS-REQUEST answer counts as that cycle's report). Push
+report, then resume (a STATUS-REQUEST answer counts as that cycle's report). The
+remote tracking ref advancing to a commit the default branch already contains is
+root's sanctioned push (charter, "Pushing is the root instance's, alone"), not
+an unaccounted actor. Push
 to the root: a **bold shelled timestamp** (`date '+%Y-%m-%d %H:%M:%S %Z'`, never
 hand-written); a markdown **table** — every backlog item (+ in-flight regression)
 → **status** (queued · active · awaiting-review · in-review · queued-feedback ·

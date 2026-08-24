@@ -263,6 +263,13 @@ wherever the lane's own conditions are met. Every non-merge path is
 **explicit-path only** — `git add <path>`, never `git add -A`. Anyone else
 writing to the main tree is off the rails.
 
+**Pushing is the root instance's, alone.** Root pushes the default branch after
+landings, on the owner's standing instruction; no team agent pushes. So the
+remote tracking ref advancing to a commit already on the local default branch
+is root's push and is accounted for — not evidence of a foreign writer. Any
+other remote movement (a tip the local branch does not contain, a force-push, a
+deleted ref) remains reportable exactly as before.
+
 ## Progress ledger — the run's machine-readable state
 
 The Manager (its sole writer, per the scoped-writers entry above) mirrors its

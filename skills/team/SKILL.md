@@ -241,9 +241,15 @@ Team-agent completions (a Developer's `READY-FOR-REVIEW`, a Reviewer's
 `APPROVED`/`CHANGES-REQUESTED`, the Merge-Clerk's `MERGED`, a QA report) can
 arrive in YOUR conversation instead of the Manager's whenever the Manager is
 between turns — normal harness routing. **Relay the payload to the Manager
-verbatim via SendMessage immediately.** But this is a *latency* optimization: the
-Manager also reconciles from git on a short cadence, so a relay you miss costs
-one poll, not a stall. Relay promptly anyway; don't sit on it.
+verbatim via SendMessage immediately — and relay before narrating:** the
+SendMessage goes out before you report the event to the owner, so the forward
+cannot be displaced by the summary. The observed failure is exactly that
+displacement — root reports a payload to the owner, treats "reported" as
+"delivered", and the Manager waits on a message root is holding. This is still
+a *latency* optimization: the Manager also reconciles from git on a short
+cadence, so a relay you miss costs one poll, not a stall. Each heartbeat also
+sweeps for unforwarded payloads from the interval since the last beat, which
+bounds any miss at one heartbeat interval.
 
 > DELETE WHEN Claude Code agent teams are generally available (not behind the
 > experimental flag) and a child's completion reaches its spawner without a
@@ -270,7 +276,10 @@ default branch and branch-naming convention:
 > recover per the watchdog — relaunch a fresh Manager with the same args. (3)
 > **Post a short update TO THE USER**: timestamp, what landed (SHAs), what's in
 > flight (item branch + last activity), anything BLOCKED/NEEDS-RESEARCH, and the
-> progress board's absolute path (`<repo>/.claude/team-progress/dashboard.html`,
+> progress board's absolute path — and FIRST, before composing it, sweep for
+> team-agent payloads (READY/APPROVED/MERGED/CLOSED/BLOCKED) that arrived in
+> your conversation since the last beat and relay any unforwarded one to the
+> Manager now, per the relay duty's relay-before-narrating rule (`<repo>/.claude/team-progress/dashboard.html`,
 > a clickable `file://` link to the live board). Never a bare "it's quiet". (4)
 > If the backlog is DRAINED and the default branch is
 > idle: tell the user the run is complete and `CronDelete` this heartbeat (find
