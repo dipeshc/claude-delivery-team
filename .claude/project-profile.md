@@ -15,7 +15,7 @@ working on *this* repository.
 - **Layout:**
   - `.claude-plugin/` — plugin manifest.
   - `agents/` — the team's agent definitions.
-  - `skills/` — the `team` and `consistency-check` skills.
+  - `skills/` — the plugin's skills, one directory per skill.
   - `workflows/` — `consistency-sweep.js`, the parallel spec audit.
   - `docs/` — the spec: `architecture.md` (entry doc), `team-charter.md`,
     `project-profile.template.md`, and `backlog/`.
