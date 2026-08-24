@@ -97,6 +97,10 @@ runs its own process on itself, backlog and all:
 - [`docs/project-profile.template.md`](docs/project-profile.template.md) —
   the per-project configuration template.
 
+Want the run at a glance? Run `/delivery-team:statusline` to install a two-line
+terminal statusline for team runs — it chains onto any statusline you already
+have rather than clobbering it, and stays silent outside team projects.
+
 ## License
 
 MIT
