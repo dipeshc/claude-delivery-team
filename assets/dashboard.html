@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery Team — Mission Control</title>
+<!--
+  Zero-runtime progress board for the delivery-team framework.
+  Self-contained: no server, no build, no network, no external assets. Opened
+  over file:// beside a sibling state.js that a running Manager rewrites every
+  reconcile. This page is a renderer, never a source of truth — delete it and
+  nothing about a run changes.
+
+  It reloads state by RE-INJECTING <script src="state.js?t=<now>"> on a short
+  timer. fetch() is deliberately avoided: browsers block cross-origin reads on
+  file://, but a script tag is exempt, and the changing ?t= query defeats the
+  disk cache so each poll reads the file's current bytes. state.js assigns
+  window.TEAM_STATE = {…}; the schema is the charter's "Progress ledger" section.
+-->
+<style>
+  :root{
+    --paper:#F6F7F4; --ink:#1B1E1C; --ink-2:#5A625C; --line:#DDE2DB; --card:#FFFFFF;
+    --accent:#2F7E78; --accent-ink:#FFFFFF;
+    --impl:#3D6FA8; --review:#B8860B; --landing:#7A68B8; --done:#3E8E58; --blocked:#BC4238;
+    --impl-bg:#EAF1F8; --review-bg:#F8F1DE; --landing-bg:#EFECF8; --done-bg:#E8F3EC; --blocked-bg:#F8E9E7; --idle-bg:#EEF0ED;
+    --term:#14171A; --term-ink:#D8DED9; --warn:#B8860B; --warn-bg:#F8F1DE;
+  }
+  @media (prefers-color-scheme: dark){:root{
+    --paper:#151815; --ink:#E8EAE6; --ink-2:#9AA39C; --line:#2A2F2B; --card:#1D211E;
+    --accent:#4FA69F;
+    --impl:#7FA9D8; --review:#D4A83C; --landing:#A395DC; --done:#6FBB8A; --blocked:#D8756B;
+    --impl-bg:#1C2530; --review-bg:#2C2515; --landing-bg:#252031; --done-bg:#1A2A20; --blocked-bg:#301D1B; --idle-bg:#222623;
+    --term:#0E1112; --term-ink:#C9D1CB; --warn:#D4A83C; --warn-bg:#2C2515;
+  }}
+  :root[data-theme="dark"]{
+    --paper:#151815; --ink:#E8EAE6; --ink-2:#9AA39C; --line:#2A2F2B; --card:#1D211E;
+    --accent:#4FA69F;
+    --impl:#7FA9D8; --review:#D4A83C; --landing:#A395DC; --done:#6FBB8A; --blocked:#D8756B;
+    --impl-bg:#1C2530; --review-bg:#2C2515; --landing-bg:#252031; --done-bg:#1A2A20; --blocked-bg:#301D1B; --idle-bg:#222623;
+    --term:#0E1112; --term-ink:#C9D1CB; --warn:#D4A83C; --warn-bg:#2C2515;
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F7F4; --ink:#1B1E1C; --ink-2:#5A625C; --line:#DDE2DB; --card:#FFFFFF;
+    --accent:#2F7E78;
+    --impl:#3D6FA8; --review:#B8860B; --landing:#7A68B8; --done:#3E8E58; --blocked:#BC4238;
+    --impl-bg:#EAF1F8; --review-bg:#F8F1DE; --landing-bg:#EFECF8; --done-bg:#E8F3EC; --blocked-bg:#F8E9E7; --idle-bg:#EEF0ED;
+    --term:#14171A; --term-ink:#D8DED9; --warn:#B8860B; --warn-bg:#F8F1DE;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);font-family:"Avenir Next","Helvetica Neue",system-ui,sans-serif;
+    margin:0;padding:24px max(20px,4vw) 60px;line-height:1.45;}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-variant-numeric:tabular-nums;}
+  h1{font-size:1.3rem;font-weight:600;margin:0;letter-spacing:-.01em}
+  .eyebrow{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);font-weight:600}
+  header.page{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  header.page .args{font-size:.72rem;color:var(--ink-2)}
+  .controls{display:flex;gap:10px;align-items:center}
+  button.theme{font:inherit;font-size:.72rem;color:var(--ink-2);background:var(--card);border:1px solid var(--line);
+    border-radius:4px;padding:4px 10px;cursor:pointer}
+  button.theme:hover{border-color:var(--accent);color:var(--accent)}
+  section{margin-bottom:22px}
+
+  /* banners */
+  .banner{border-radius:6px;padding:10px 16px;margin-bottom:16px;font-size:.82rem;display:flex;gap:10px;align-items:baseline}
+  .banner.stale{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn)}
+  .banner.blocked{background:var(--blocked-bg);color:var(--blocked);border:1px solid var(--blocked)}
+  .banner b{font-weight:700}
+  .hidden{display:none !important}
+
+  /* summary bar */
+  .summary{display:flex;gap:26px;align-items:center;flex-wrap:wrap;background:var(--card);
+    border:1px solid var(--line);border-radius:6px;padding:14px 20px;margin-bottom:14px}
+  .summary .big{font-size:1.5rem;font-weight:600}
+  .stat{display:flex;flex-direction:column;gap:2px}
+  .stat .eyebrow{font-size:.62rem}
+  .bar{flex:1 1 220px;min-width:180px;height:10px;border-radius:5px;background:var(--idle-bg);overflow:hidden;display:flex}
+  .bar i{display:block;height:100%}
+  .legend{display:flex;gap:14px;font-size:.72rem;color:var(--ink-2);flex-wrap:wrap;margin-top:4px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+
+  /* board */
+  .board{display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;overflow-x:auto}
+  .col{background:var(--card);border:1px solid var(--line);border-radius:6px;min-width:180px;display:flex;flex-direction:column}
+  .col h3{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin:0;
+    padding:10px 12px;border-bottom:2px solid var(--cc,var(--line));color:var(--cc,var(--ink-2));display:flex;justify-content:space-between}
+  .col .cards{padding:10px;display:flex;flex-direction:column;gap:10px;min-height:70px}
+  .card{border:1px solid var(--line);border-left:3px solid var(--cc,var(--line));border-radius:4px;padding:9px 11px;background:var(--paper)}
+  .card.isblocked{border-left-color:var(--blocked)}
+  .card .slug{font-size:.8rem;font-weight:600;line-height:1.3;word-break:break-word}
+  .card .meta{display:flex;justify-content:space-between;gap:8px;margin-top:6px;font-size:.7rem;color:var(--ink-2)}
+  .chip{font-size:.62rem;font-weight:700;border-radius:3px;padding:1px 5px;background:var(--cc-bg,var(--idle-bg));color:var(--cc,var(--ink-2))}
+  .chip.blocked{background:var(--blocked-bg);color:var(--blocked)}
+  .empty{font-size:.72rem;color:var(--ink-2);font-style:italic;padding:4px 2px}
+  .grouped{margin-top:6px;font-size:.68rem;color:var(--ink-2);word-break:break-word}
+
+  /* lower grid */
+  .lower{display:grid;grid-template-columns:minmax(260px,320px) 1fr;gap:12px;margin-top:14px}
+  @media (max-width:800px){.lower{grid-template-columns:1fr}.board{grid-template-columns:repeat(5,180px)}}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+  .panel h3{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin:0 0 10px;font-weight:600}
+  .agent{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:.8rem}
+  .agent:first-of-type{border-top:0}
+  .agent .who{font-weight:600}
+  .agent .what{color:var(--ink-2);font-size:.72rem;text-align:right}
+  .feed{display:flex;flex-direction:column;gap:0}
+  .ev{display:grid;grid-template-columns:58px 92px 1fr;gap:12px;padding:7px 0;border-top:1px solid var(--line);
+    font-size:.76rem;align-items:baseline}
+  .ev:first-of-type{border-top:0}
+  .ev .t{color:var(--ink-2)}
+  .ev .k{font-weight:700;font-size:.66rem;letter-spacing:.05em}
+  footer{margin-top:30px;font-size:.72rem;color:var(--ink-2);max-width:74ch}
+  footer .mono{font-size:.68rem}
+
+  /* no-run empty state */
+  #norun{text-align:center;padding:80px 20px;color:var(--ink-2)}
+  #norun .big{font-size:1.1rem;color:var(--ink);font-weight:600;margin-bottom:8px}
+  #norun .mono{font-size:.72rem}
+</style>
+</head>
+<body>
+
+<div id="norun" class="hidden">
+  <div class="big">No delivery-team run is active</div>
+  <div>This page renders <span class="mono">state.js</span> written beside it by a running Manager.</div>
+  <div class="mono" style="margin-top:10px">waiting for .claude/team-progress/state.js …</div>
+</div>
+
+<div id="app" class="hidden">
+  <header class="page">
+    <div>
+      <div class="eyebrow">delivery-team</div>
+      <h1 id="run-label">Delivery run</h1>
+      <div class="args mono" id="run-args"></div>
+    </div>
+    <div class="controls">
+      <span class="eyebrow" id="clock"></span>
+      <button class="theme" id="theme-btn" type="button">theme</button>
+    </div>
+  </header>
+
+  <div class="banner stale hidden" id="stale-banner">
+    <b>Stale</b><span id="stale-text">The Manager has not written state for a while — the run may be stalled or finished.</span>
+  </div>
+  <div class="banner blocked hidden" id="blocked-banner">
+    <b>Blocked</b><span id="blocked-text"></span>
+  </div>
+
+  <div class="summary">
+    <div class="stat"><span class="eyebrow">Items done</span><span class="big mono" id="s-done">0<span style="color:var(--ink-2);font-size:1rem" id="s-total">/0</span></span></div>
+    <div class="stat" style="flex:1 1 240px">
+      <span class="eyebrow">Pipeline</span>
+      <span class="bar" id="s-bar" role="img" aria-label="pipeline progress"></span>
+      <span class="legend" id="s-legend"></span>
+    </div>
+    <div class="stat"><span class="eyebrow">Tip</span><span class="mono" id="s-tip">—</span></div>
+    <div class="stat"><span class="eyebrow">vs origin</span><span class="mono" id="s-origin">—</span></div>
+    <div class="stat"><span class="eyebrow">Elapsed</span><span class="mono" id="s-elapsed">—</span></div>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <div class="lower">
+    <div class="panel">
+      <h3>Agents</h3>
+      <div id="agents"></div>
+    </div>
+    <div class="panel">
+      <h3>Events — derived from git + payload relays</h3>
+      <div class="feed" id="events"></div>
+    </div>
+  </div>
+
+  <footer>
+    Every number here is derivable from two sources that already exist:
+    <span class="mono">git</span> (branches, worktrees, backlog files, tips) and the
+    Manager's ledger, written atomically to <span class="mono">state.js</span> beside this
+    page. The board is a renderer, not a second source of truth.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var POLL_MS = 3000;
+  var STALE_S = 90;
+
+  // Pipeline columns, in lifecycle order. A card's stage maps to one of these;
+  // stage "blocked" is off-pipeline and surfaces in the banner + agent rail.
+  var COLUMNS = [
+    {stage:"queued",       title:"Backlog",       cc:"var(--ink-2)"},
+    {stage:"implementing", title:"Implementing",  cc:"var(--impl)",    bg:"var(--impl-bg)"},
+    {stage:"review",       title:"In review",     cc:"var(--review)",  bg:"var(--review-bg)"},
+    {stage:"landing",      title:"Landing",       cc:"var(--landing)", bg:"var(--landing-bg)"},
+    {stage:"done",         title:"Done this run", cc:"var(--done)",    bg:"var(--done-bg)"}
+  ];
+
+  var $ = function(id){ return document.getElementById(id); };
+  var el = function(tag, cls, txt){
+    var n = document.createElement(tag);
+    if(cls) n.className = cls;
+    if(txt != null) n.textContent = txt;
+    return n;
+  };
+  var esc = function(v){ return (v == null ? "" : String(v)); };
+
+  // ---- theme toggle (persisted; defaults to prefers-color-scheme) ----
+  try {
+    var saved = localStorage.getItem("team-board-theme");
+    if(saved === "light" || saved === "dark") document.documentElement.setAttribute("data-theme", saved);
+  } catch(e){}
+  $("theme-btn").addEventListener("click", function(){
+    var cur = document.documentElement.getAttribute("data-theme");
+    if(!cur){
+      cur = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    var next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("team-board-theme", next); } catch(e){}
+  });
+
+  // ---- time helpers ----
+  function nowS(){ return Math.floor(Date.now()/1000); }
+  function fmtClock(epoch){
+    if(!epoch) return "";
+    var d = new Date(epoch*1000);
+    return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  }
+  function fmtDur(sec){
+    if(sec == null || isNaN(sec) || sec < 0) return "—";
+    sec = Math.floor(sec);
+    if(sec < 60) return sec + "s";
+    var m = Math.floor(sec/60), s = sec % 60;
+    if(m < 60) return m + "m" + (s ? " " + s + "s" : "");
+    var h = Math.floor(m/60); m = m % 60;
+    return h + "h" + (m ? " " + m + "m" : "");
+  }
+  function short(sha){ return sha ? String(sha).slice(0,7) : "—"; }
+
+  // ---- render ----
+  function showNoRun(){
+    $("norun").classList.remove("hidden");
+    $("app").classList.add("hidden");
+    document.title = "Delivery Team — no run";
+  }
+
+  function render(state){
+    if(!state || typeof state !== "object"){ showNoRun(); return; }
+    $("norun").classList.add("hidden");
+    $("app").classList.remove("hidden");
+
+    var items  = Array.isArray(state.items)  ? state.items  : [];
+    var agents = Array.isArray(state.agents) ? state.agents : [];
+    var events = Array.isArray(state.events) ? state.events : [];
+    var run    = state.run  || {};
+    var repo   = state.repo || {};
+    var gen    = Number(state.generatedAt) || 0;
+
+    // header
+    $("run-label").textContent = run.label || "Delivery run";
+    $("run-args").textContent  = run.args ? "args: " + run.args : "";
+    $("clock").textContent     = gen ? "updated " + fmtClock(gen) : "";
+
+    // staleness
+    var stale = gen ? (nowS() - gen) > STALE_S : true;
+    var staleBanner = $("stale-banner");
+    if(stale){
+      staleBanner.classList.remove("hidden");
+      $("stale-text").textContent = gen
+        ? "Last state write was " + fmtDur(nowS() - gen) + " ago (over " + STALE_S
+          + "s) — the Manager may be stalled or the run finished."
+        : "No timestamp in state — the Manager may not be writing.";
+    } else {
+      staleBanner.classList.add("hidden");
+    }
+
+    // counts by stage
+    var byStage = {queued:[], implementing:[], review:[], landing:[], done:[], blocked:[]};
+    items.forEach(function(it){
+      var st = byStage[it.stage] ? it.stage : "queued";
+      byStage[st].push(it);
+    });
+    var total = items.length;
+    var doneN = byStage.done.length;
+
+    // blocked banner
+    var blockedBanner = $("blocked-banner");
+    if(byStage.blocked.length){
+      blockedBanner.classList.remove("hidden");
+      $("blocked-text").textContent = byStage.blocked.map(function(it){
+        return esc(it.slug) + (it.note ? " (" + it.note + ")" : "");
+      }).join(" · ");
+    } else {
+      blockedBanner.classList.add("hidden");
+    }
+
+    // summary
+    $("s-done").firstChild.nodeValue = String(doneN);
+    $("s-total").textContent = "/" + total;
+    var segs = [
+      {n: byStage.done.length,         c:"var(--done)"},
+      {n: byStage.landing.length,      c:"var(--landing)"},
+      {n: byStage.review.length,       c:"var(--review)"},
+      {n: byStage.implementing.length, c:"var(--impl)"},
+      {n: byStage.blocked.length,      c:"var(--blocked)"}
+    ];
+    var bar = $("s-bar"); bar.innerHTML = "";
+    if(total){
+      segs.forEach(function(seg){
+        if(!seg.n) return;
+        var i = el("i");
+        i.style.width = (100 * seg.n / total) + "%";
+        i.style.background = seg.c;
+        bar.appendChild(i);
+      });
+    }
+    var legend = $("s-legend"); legend.innerHTML = "";
+    [["done","var(--done)",byStage.done.length],
+     ["in review","var(--review)",byStage.review.length],
+     ["blocked","var(--blocked)",byStage.blocked.length]].forEach(function(l){
+      var s = el("span");
+      var d = el("span","dot"); d.style.background = l[1];
+      s.appendChild(d); s.appendChild(document.createTextNode(l[0] + " " + l[2]));
+      legend.appendChild(s);
+    });
+
+    $("s-tip").textContent = short(repo.tip);
+    var ahead = repo.aheadOfOrigin;
+    $("s-origin").textContent = (ahead == null) ? "—" : (ahead === 0 ? "in sync" : ("ahead " + ahead + " ↑"));
+    $("s-elapsed").textContent = run.startedAt ? fmtDur(nowS() - Number(run.startedAt)) : "—";
+
+    // board
+    var board = $("board"); board.innerHTML = "";
+    COLUMNS.forEach(function(col){
+      var list = byStage[col.stage] || [];
+      var c = el("div","col");
+      c.style.setProperty("--cc", col.cc);
+      if(col.bg) c.style.setProperty("--cc-bg", col.bg);
+      var h = el("h3");
+      h.appendChild(document.createTextNode(col.title));
+      h.appendChild(el("span","mono", String(list.length)));
+      c.appendChild(h);
+      var cards = el("div","cards");
+      if(!list.length){
+        cards.appendChild(el("div","empty","—"));
+      } else {
+        list.forEach(function(it){ cards.appendChild(renderCard(it)); });
+      }
+      c.appendChild(cards);
+      board.appendChild(c);
+    });
+
+    // agents
+    var arail = $("agents"); arail.innerHTML = "";
+    if(!agents.length){
+      arail.appendChild(el("div","empty","no agents reported"));
+    } else {
+      agents.forEach(function(a){
+        var row = el("div","agent");
+        var who = el("span","who");
+        var dot = el("span","dot"); dot.style.background = agentDot(a.state);
+        who.appendChild(dot); who.appendChild(document.createTextNode(esc(a.role)));
+        var what = el("span","what");
+        var since = a.lastSignalAt ? " · " + fmtDur(nowS() - Number(a.lastSignalAt)) + " ago" : "";
+        what.textContent = esc(a.state) + since;
+        row.appendChild(who); row.appendChild(what);
+        arail.appendChild(row);
+      });
+    }
+
+    // events (newest first, bounded by the writer to ~20)
+    var feed = $("events"); feed.innerHTML = "";
+    if(!events.length){
+      feed.appendChild(el("div","empty","no events yet"));
+    } else {
+      events.forEach(function(ev){
+        var row = el("div","ev");
+        row.appendChild(el("span","t mono", fmtClock(Number(ev.at))));
+        var k = el("span","k", esc(ev.kind).toUpperCase());
+        k.style.color = eventColor(ev.kind);
+        row.appendChild(k);
+        row.appendChild(el("span", null, esc(ev.text)));
+        feed.appendChild(row);
+      });
+    }
+
+    // document.title — glanceable in the tab strip
+    var mark = stale ? "▫ " : "";
+    var blockedMark = byStage.blocked.length ? (" ✕" + byStage.blocked.length) : "";
+    document.title = mark + "team " + doneN + "/" + total + blockedMark + " · " + (run.label || "run");
+  }
+
+  function renderCard(it){
+    var card = el("div","card" + (it.stage === "blocked" ? " isblocked" : ""));
+    card.appendChild(el("div","slug", esc(it.slug)));
+    var m1 = el("div","meta");
+    var chip = el("span","chip" + (it.stage === "blocked" ? " blocked" : ""), esc(it.priority || "—"));
+    m1.appendChild(chip);
+    m1.appendChild(el("span","mono", fmtDur(it.stageEnteredAt ? (nowS() - Number(it.stageEnteredAt)) : null)));
+    card.appendChild(m1);
+    var m2 = el("div","meta");
+    var whoModel = [it.agent, it.model].filter(Boolean).join(" · ") || "—";
+    m2.appendChild(el("span", null, whoModel));
+    m2.appendChild(el("span","mono", short(it.head)));
+    card.appendChild(m2);
+    if(Array.isArray(it.grouped) && it.grouped.length){
+      card.appendChild(el("div","grouped", "⧉ grouped: " + it.grouped.join(" · ")));
+    }
+    return card;
+  }
+
+  function agentDot(state){
+    var s = (state || "").toLowerCase();
+    if(s.indexOf("block") >= 0) return "var(--blocked)";
+    if(s.indexOf("review") >= 0) return "var(--review)";
+    if(s.indexOf("idle") >= 0 || s.indexOf("standing") >= 0 || s.indexOf("n/a") >= 0) return "var(--ink-2)";
+    return "var(--done)";
+  }
+  function eventColor(kind){
+    var k = (kind || "").toLowerCase();
+    if(k.indexOf("merg") >= 0 || k.indexOf("done") >= 0) return "var(--done)";
+    if(k.indexOf("block") >= 0) return "var(--blocked)";
+    if(k.indexOf("review") >= 0) return "var(--review)";
+    if(k.indexOf("land") >= 0) return "var(--landing)";
+    if(k.indexOf("ready") >= 0 || k.indexOf("dispatch") >= 0) return "var(--impl)";
+    return "var(--accent)";
+  }
+
+  // ---- poll: re-inject a fresh, cache-busted script tag every POLL_MS ----
+  // A new <script src="state.js?t=<now>"> is the ONLY reload path that works on
+  // file:// (fetch is CORS-blocked there). The query defeats the disk cache;
+  // onload re-runs render() with the freshly-read window.TEAM_STATE.
+  var errStreak = 0;
+  function poll(){
+    var s = document.createElement("script");
+    s.src = "state.js?t=" + Date.now();
+    s.onload = function(){
+      cleanup(s);
+      errStreak = 0;
+      try { render(window.TEAM_STATE); } catch(e){ /* keep last good frame */ }
+    };
+    s.onerror = function(){
+      cleanup(s);
+      // Absent or unreadable state.js. One miss can be a transient gap during
+      // the Manager's atomic mv; a persistent absence means no run is active
+      // (never opened, or finished and cleaned up). Tolerate the blip, then
+      // fall back to the no-run state — the page never errors on absent state.
+      errStreak++;
+      if(errStreak >= 2 || !window.TEAM_STATE) showNoRun();
+    };
+    document.head.appendChild(s);
+  }
+  function cleanup(s){
+    if(s && s.parentNode) s.parentNode.removeChild(s);
+  }
+
+  // Load state.js once through the same cache-busted path, then poll forever.
+  // Until the first load resolves, show the no-run state rather than a blank.
+  showNoRun();
+  poll();
+  setInterval(poll, POLL_MS);
+  // Re-tick the clock/staleness even if the file is not changing.
+  setInterval(function(){ if(window.TEAM_STATE) render(window.TEAM_STATE); }, 5000);
+})();
+</script>
+</body>
+</html>

@@ -93,6 +93,28 @@ and QA.
 > worktrees itself per the profile's **Worktree layout**; a harness-created one
 > underneath it detaches the agent from the tree the pipeline is tracking.
 
+**Open the progress board in the SAME turn you spawn (once per run).** Ensure
+the zero-runtime board page exists beside where the Manager writes its state,
+then open it — shell only, no runtime, no network:
+
+```
+mkdir -p "<repo>/.claude/team-progress"
+[ -f "<repo>/.claude/team-progress/dashboard.html" ] \
+  || cp "${CLAUDE_PLUGIN_ROOT}/assets/dashboard.html" "<repo>/.claude/team-progress/dashboard.html"
+# open once, by platform; a headless host simply has nothing to open:
+open    "<repo>/.claude/team-progress/dashboard.html" 2>/dev/null \
+  || xdg-open "<repo>/.claude/team-progress/dashboard.html" 2>/dev/null \
+  || start "" "<repo>/.claude/team-progress/dashboard.html" 2>/dev/null || true
+```
+
+The page shows **"no run active"** until the Manager's first `state.js` write
+(see the Manager's "Mirror the ledger to the progress board"), then live-polls
+it over `file://` and renders the pipeline board, agent rail, and event feed.
+Open it **at most once per run**: a recovered or relaunched Manager must not
+reopen a tab the owner may have deliberately closed — the `/delivery-team:board`
+skill is how the owner reopens it on demand. If the profile's **Progress board**
+section is `n/a`, the board is off for this project — skip this step entirely.
+
 **Install the status heartbeat in the SAME turn you spawn (mandatory).** The
 moment you launch a Manager, `CronCreate` a recurring ~10-min job (off the round
 minute, e.g. `3,13,23,33,43,53 * * * *`) whose prompt re-invokes YOU to derive
@@ -247,8 +269,10 @@ default branch and branch-naming convention:
 > ~60s; if dead (~15 min no merges / no branch+worktree movement / no live task)
 > recover per the watchdog — relaunch a fresh Manager with the same args. (3)
 > **Post a short update TO THE USER**: timestamp, what landed (SHAs), what's in
-> flight (item branch + last activity), anything BLOCKED/NEEDS-RESEARCH. Never a
-> bare "it's quiet". (4) If the backlog is DRAINED and the default branch is
+> flight (item branch + last activity), anything BLOCKED/NEEDS-RESEARCH, and the
+> progress board's absolute path (`<repo>/.claude/team-progress/dashboard.html`,
+> a clickable `file://` link to the live board). Never a bare "it's quiet". (4)
+> If the backlog is DRAINED and the default branch is
 > idle: tell the user the run is complete and `CronDelete` this heartbeat (find
 > its id via `CronList`).
 

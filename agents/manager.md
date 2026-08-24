@@ -227,6 +227,40 @@ status table so the binding constraint (where items sit) is measurable next run.
 `git branch --list 'item/*'`, and the backlog directory are durable.
 That is what makes your death recoverable.
 
+## Mirror the ledger to the progress board
+
+You are the **sole writer** of the run's machine-readable state — the charter's
+scoped-writers entry commissions it as runtime housekeeping. On **every
+reconcile/poll** (not the report cadence — a continuously-rendering surface needs
+state between reports), project your in-context ledger plus your git
+reconciliation into `<repo>/.claude/team-progress/state.js`, a single
+`window.TEAM_STATE = { … };` statement in the **schema the charter's "Progress
+ledger" section defines** (that section is the one contract; a status line and
+the dashboard both read it — never redefine it here). Every field comes from data
+you already hold, so the write is one shell heredoc.
+
+Write it **atomically** so no reader catches a half-written frame, and create the
+directory the first time:
+
+```
+mkdir -p "$REPO/.claude/team-progress"
+cat > "$REPO/.claude/team-progress/state.js.tmp" <<EOF
+window.TEAM_STATE = { … };
+EOF
+mv -f "$REPO/.claude/team-progress/state.js.tmp" "$REPO/.claude/team-progress/state.js"
+```
+
+The file lives under `.claude/` (git-ignored) and is never committed — it is a
+disposable projection of git plus your ledger. Refresh `generatedAt` (shelled
+`date '+%s'`) on every write: the page treats state older than ~90 s as a dead
+Manager and shows a staleness banner, so a write you skip reads as a stall. Keep
+`events` newest-first and bounded (~20). The `dashboard.html` renderer is placed
+beside `state.js` by the team skill at spawn (and by the `board` skill on
+demand); you write only the state, never the page. The default location is
+`<repo>/.claude/team-progress/`; if the profile's **Progress board** section
+names a directory, use it, and if that section is `n/a` the board is off for this
+project — skip the state write and the board path in your reports entirely.
+
 ## Routing — pull-based, not push-dependent
 
 Route **READY → the Reviewer** (`subagent_type: "delivery-team:reviewer"`,
@@ -310,15 +344,18 @@ and jumps the queue.
 
 `STATUS-REQUEST` is top priority: **first reconcile the ledger against git**
 (`git log --no-show-signature --oneline -5 <default-branch>`, `git worktree list`,
-`git branch --list 'item/*'`), then push the report, then resume (a
-STATUS-REQUEST answer counts as that cycle's report). Push to the root: a **bold
-shelled timestamp** (`date '+%Y-%m-%d %H:%M:%S %Z'`, never hand-written); a
-markdown **table** — every backlog item (+ in-flight regression) → **status**
-(queued · active · awaiting-review · in-review · queued-feedback · merging ·
-parked/blocked · merged-this-session) → **assigned agent** (developer + model,
-reviewer-<n>, merge-clerk, qa, or —) → **stage-elapsed** (from the timestamps) →
-rough **ETA**; and one summary line (WIP used vs target, Reviewer count, QA
-state, merges so far).
+`git branch --list 'item/*'`) — that reconcile also refreshes the progress board
+(`state.js`, per "Mirror the ledger to the progress board") — then push the
+report, then resume (a STATUS-REQUEST answer counts as that cycle's report). Push
+to the root: a **bold shelled timestamp** (`date '+%Y-%m-%d %H:%M:%S %Z'`, never
+hand-written); a markdown **table** — every backlog item (+ in-flight regression)
+→ **status** (queued · active · awaiting-review · in-review · queued-feedback ·
+merging · parked/blocked · merged-this-session) → **assigned agent** (developer +
+model, reviewer-<n>, merge-clerk, qa, or —) → **stage-elapsed** (from the
+timestamps) → rough **ETA**; and one summary line (WIP used vs target, Reviewer
+count, QA state, merges so far). Close with the **progress board's absolute path**
+(`<repo>/.claude/team-progress/dashboard.html`) so the terminal rendering is a
+clickable `file://` link to the live board.
 
 ## Supervision — liveness AND scope
 

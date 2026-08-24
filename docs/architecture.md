@@ -37,7 +37,9 @@ Its spec is the documents under `docs/`.
 | `agents/ui-inspector.md` | Root-owned specialist for visual QA of a project's rendered UI. |
 | `skills/team/SKILL.md` | How the root instance runs a delivery: lane routing, spawning the Manager, status heartbeat, watchdog, recovery. |
 | `skills/team/exploration-and-promotion.md` | How exploration runs and how a kept spike is promoted through the pipeline. |
+| `skills/board/SKILL.md` | Opens the progress board on demand, copying the page into place if missing. Zero-runtime, shell and git only; safe to open with no run active. |
 | `skills/consistency-check/SKILL.md` | The two-phase spec audit: spec-vs-spec, then spec-vs-code. Owns the method — the applicability gate, the finding classes, how a contradiction is resolved on paper, and the filing rules. Files findings; fixes nothing. |
+| `assets/dashboard.html` | The zero-runtime progress board: a self-contained browser page copied beside the Manager's `state.js` and opened over `file://`. Live-polls the state ledger and renders the pipeline board, agent rail, and event feed. A renderer, never a source of truth. |
 | `workflows/consistency-sweep.js` | Runs that audit as a whole-spec sweep: a finding class per agent in parallel, each finding put to an independent skeptic that tries to refute it, survivors filed in one serialized step. Owns the fan-out only; the method stays in the skill. Invoked on demand as `/delivery-team:consistency-sweep`; QA's cadence keeps calling the skill directly, since a subagent cannot launch a workflow. |
 
 ## Invariants

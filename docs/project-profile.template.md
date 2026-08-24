@@ -125,6 +125,21 @@ hold. So `n/a` here means "no housekeeping writes", never "no direct lane".
 - **Branch naming:** e.g. `item/<slug>`
 - **Landing style:** e.g. fast-forward only, one commit per item.
 
+## Progress board
+
+The live browser board the Manager feeds while a run is in flight (see the
+charter's "Progress ledger" section). The Manager writes its machine-readable
+state to `state.js` here on every reconcile, the team skill copies the page in
+and opens it once per run, and `/delivery-team:board` reopens it on demand. All
+of it is runtime housekeeping under `.claude/` — git-ignored, never committed.
+
+- **Where the board lives:** the default is `<repo>/.claude/team-progress/`
+  (`state.js` plus a copied `dashboard.html`). Name a different directory only if
+  this project needs one.
+- `n/a` to turn the board off — the Manager then skips the state write and the
+  skills skip opening the page. A run still works exactly the same; only the
+  visual surface is absent.
+
 ## Reviewer pool
 
 - **Instance count:** the framework default is a single Reviewer. Set a higher

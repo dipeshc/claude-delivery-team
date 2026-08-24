@@ -248,9 +248,13 @@ housekeeping writers:
    explicit-path only.
 5. **Researcher** — backlog item files, explicit-path only.
 6. **Manager** — housekeeping that touches no working code: moving a backlog
-   item to `blocked/`, worktree/branch lifecycle. Never a content edit. The
-   Manager is the **only** role that removes an item worktree or deletes an item
-   branch; a developer leaves both on disk and reports.
+   item to `blocked/`, worktree/branch lifecycle, and the **progress ledger**
+   (`<repo>/.claude/team-progress/state.js`, plus an optional `state.json` twin
+   and the copied `dashboard.html` beside them) — runtime state written on every
+   reconcile, never committed and kept out of version control. Its schema is the
+   "Progress ledger" section below; the Manager is its sole writer. Never a
+   content edit. The Manager is the **only** role that removes an item worktree
+   or deletes an item branch; a developer leaves both on disk and reports.
 
 The project profile's "sanctioned direct-write paths" section names the exact
 paths for that repo: it scopes the housekeeping writes made straight to the
@@ -258,6 +262,72 @@ main tree, not the two merge paths above, which this list already sanctions
 wherever the lane's own conditions are met. Every non-merge path is
 **explicit-path only** — `git add <path>`, never `git add -A`. Anyone else
 writing to the main tree is off the rails.
+
+## Progress ledger — the run's machine-readable state
+
+The Manager (its sole writer, per the scoped-writers entry above) mirrors its
+in-context ledger and git reconciliation to
+`<repo>/.claude/team-progress/state.js` on **every reconcile/poll**, not on the
+report cadence — a continuously-rendering surface needs fresh state between
+reports. The file is a single statement, `window.TEAM_STATE = { … };`, written
+**atomically** (write a temp file, `mv` it into place) so no reader ever sees a
+half-written frame. It lives under `.claude/`, is never committed, and is
+disposable: it is a projection of git plus the ledger, so deleting it costs
+nothing and losing it is not losing state. A `state.json` twin carrying the same
+object may be written for non-browser consumers; when it is, `state.js` is that
+JSON wrapped mechanically (`window.TEAM_STATE = ` + the JSON + `;`).
+
+This schema is the **single contract** every consumer reads (the shipped
+`dashboard.html`, any status line, any future renderer); a consumer never
+redefines it. Every field is derivable from data the Manager already holds, so
+the write is one shell heredoc. Readers must treat every field as optional and
+degrade gracefully — an older or partial writer must never make a renderer
+error.
+
+```js
+window.TEAM_STATE = {
+  generatedAt: 1723645200,          // epoch seconds of THIS write; drives staleness
+  run: {
+    label: "short human run title", // for the header and document.title
+    args:  "verbatim run args / item filter",
+    startedAt: 1723642740           // epoch seconds; drives elapsed
+  },
+  items: [                          // one row per in-flight / this-run item
+    {
+      slug: "some-item-slug",
+      priority: "P2",               // filename priority, or a grouped label e.g. "P0 ×2 + P1"
+      stage: "review",              // ENUM: queued | implementing | review | landing | done | blocked
+      agent: "reviewer-1",          // assigned agentId / role, or "—"
+      model: "opus",                // model tier of the assigned agent, or "—"
+      branch: "item/some-item-slug",
+      head:   "1ba9449c",           // branch tip sha (any length; the page shortens)
+      stageEnteredAt: 1723644644,   // epoch seconds the item entered its current stage
+      grouped: ["sibling-slug"],    // optional: other slugs landing in this commit
+      note: "awaits X"              // optional: short reason, chiefly for blocked
+    }
+  ],
+  agents: [                         // one row per known role
+    { role: "Manager", state: "reconciling", lastSignalAt: 1723645160 }
+    // state is free human text; lastSignalAt is epoch seconds of the last real
+    // liveness signal (0/absent = never/idle).
+  ],
+  repo: {
+    defaultBranch: "main",
+    tip: "eba96d2f",                // default-branch tip sha
+    aheadOfOrigin: 0                // commits ahead of origin (0 = in sync)
+  },
+  events: [                         // newest first, bounded to ~20 by the writer
+    { at: 1723645170, kind: "in-review", text: "one-line summary" }
+    // kind is a short free label (run, dispatch, ready, in-review, changes,
+    // blocked, merged, rebase, drained, …); the page colours it heuristically.
+  ]
+};
+```
+
+The `stage` enum is the load-bearing field: it is what a board groups into
+lifecycle columns and what a status line aggregates into counts, so it is the
+one field whose values are fixed rather than free text. `blocked` is
+off-pipeline (a parked item), distinct from the five pipeline stages.
 
 ## Backlog conventions
 
